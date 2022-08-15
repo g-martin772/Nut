@@ -17,6 +17,9 @@ project "Nut"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("int/" .. outputdir .. "/%{prj.name}")
 
+    pchheader "ntpch.h"
+    pchsource "Nut/src/ntpch.cpp"
+
     files {
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.cpp",

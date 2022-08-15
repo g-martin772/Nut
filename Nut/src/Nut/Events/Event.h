@@ -2,9 +2,6 @@
 
 #include "../Core.h"
 
-#include <string>
-#include <functional>
-
 namespace Nut {
 	enum class EventType {
 		None = 0,

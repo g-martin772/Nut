@@ -1,3 +1,4 @@
+#include "ntpch.h"
 #include "Application.h"
 
 #include "Events/AppEvent.h"
