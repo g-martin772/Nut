@@ -1,8 +1,9 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+﻿.vs/
+int/
+bin/
 
-/.vs/Nut/v17
-/.vs/Nut
-/int/Debug-windows-x86_64
-/bin/Debug-windows-x86_64
+*.user
+*.filters
+*.vcxproj
+*.sln
+
