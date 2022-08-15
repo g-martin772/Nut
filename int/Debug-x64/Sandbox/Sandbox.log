@@ -1,3 +1,0 @@
-﻿  Application.cpp
-E:\Projects\C++\Engine 2.0\Nut\Sandbox\src\Application.cpp(6,13): warning C4326: return type of 'main' should be 'int' instead of 'void'
-  Sandbox.vcxproj -> E:\Projects\C++\Engine 2.0\Nut\bin\Debug-x64\Sandbox\Sandbox.exe
