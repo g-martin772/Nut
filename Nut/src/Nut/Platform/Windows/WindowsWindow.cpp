@@ -3,7 +3,7 @@
 #include "Nut/Events/AppEvent.h"
 #include "Nut/Events/MouseEvent.h"
 #include "Nut/Events/KeyEvents.h"
-#include "include/glad/glad.h"
+#include "glad/glad.h"
 
 namespace Nut {
 

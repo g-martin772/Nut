@@ -10,11 +10,13 @@ workspace "Nut"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
-IncludeDir["GLFW"] = "Nut/vendor/GLFW"
-IncludeDir["GLAD"] = "Nut/vendor/GLAD"
+IncludeDir["GLFW"] = "Nut/vendor/GLFW/include"
+IncludeDir["GLAD"] = "Nut/vendor/GLAD/include"
+IncludeDir["ImGui"] = "Nut/vendor/imgui"
 
 include "Nut/vendor/GLFW"
 include "Nut/vendor/GLAD"
+include "Nut/vendor/imgui"
 
 project "Nut"
     location "Nut"
@@ -37,12 +39,14 @@ project "Nut"
         "%{prj.name}/src",
         "%{prj.name}/vendor/spdlog/include",
         "%{IncludeDir.GLFW}",
-        "%{IncludeDir.GLAD}"
+        "%{IncludeDir.GLAD}",
+        "%{IncludeDir.ImGui}"
     }
 
     links{
         "GLFW",
         "GLAD",
+        "ImGui",
         "opengl32.lib"
     }
 

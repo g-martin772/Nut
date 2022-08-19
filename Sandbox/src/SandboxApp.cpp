@@ -21,6 +21,7 @@ class Sandbox : public Nut::Application {
 public:
 	Sandbox() {
 		PushLayer(new ExampleLayer());
+		PushOverlay(new Nut::ImGuiLayer());
 	}
 
 	~Sandbox() {
