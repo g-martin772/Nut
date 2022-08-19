@@ -60,14 +60,17 @@ project "Nut"
     filter "configurations:Debug"
         defines "NT_DEBUG"
         symbols "On"
+        buildoptions "/MDd"
 
     filter "configurations:Release"
         defines "NT_RELEASE"
         optimize "On"
+        buildoptions "/MD"
 
     filter "configurations:Dist"
         defines "NT_DIST"
         optimize "On"
+        buildoptions "/MD"
 
 
 
