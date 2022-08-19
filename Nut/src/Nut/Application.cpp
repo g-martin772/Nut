@@ -3,15 +3,19 @@
 
 #include "Events/AppEvent.h"
 #include "Log.h"
+#include "../GLAD/include/glad/glad.h"
 #include "../GLFW/include/GLFW/glfw3.h"
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
-#define EVENTLOGGER 1
+#define EVENTLOGGER 0
 
 namespace Nut {
 	Application::Application() {
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+
+		unsigned int id;
+		glGenVertexArrays(1, &id);
 	}
 
 	Application::~Application() {

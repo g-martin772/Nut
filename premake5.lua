@@ -11,8 +11,10 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
 IncludeDir["GLFW"] = "Nut/vendor/GLFW"
+IncludeDir["GLAD"] = "Nut/vendor/GLAD"
 
 include "Nut/vendor/GLFW"
+include "Nut/vendor/GLAD"
 
 project "Nut"
     location "Nut"
@@ -34,11 +36,13 @@ project "Nut"
     includedirs {
         "%{prj.name}/src",
         "%{prj.name}/vendor/spdlog/include",
-        "%{IncludeDir.GLFW}"
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.GLAD}"
     }
 
     links{
         "GLFW",
+        "GLAD",
         "opengl32.lib"
     }
 
@@ -110,11 +114,14 @@ project "Sandbox"
         filter "configurations:Debug"
             defines "NT_DEBUG"
             symbols "On"
+            buildoptions "/MDd"
     
         filter "configurations:Release"
             defines "NT_RELEASE"
             optimize "On"
+            buildoptions "/MD"
     
         filter "configurations:Dist"
             defines "NT_DIST"
             optimize "On"
+            buildoptions "/MD"

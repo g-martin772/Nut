@@ -5,5 +5,6 @@
 #include "Nut/Log.h"
 #include "Nut/LayerStack.h"
 #include "Nut/Application.h"
+#include "Nut/Events/MouseEvent.h"
 
 #include "Nut/Entrypoint.h"
