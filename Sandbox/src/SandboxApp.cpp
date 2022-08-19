@@ -11,6 +11,8 @@ public:
 	}
 };
 
+
 Nut::Application* Nut::CreateApplication() {
 	return new Sandbox();
 }
+ 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../src/Nut/Log.h"
+
 #include <iostream>
 #include <memory>
 #include <utility>

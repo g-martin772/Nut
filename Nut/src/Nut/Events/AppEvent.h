@@ -52,45 +52,5 @@ namespace Nut{
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
-	class NUT_API ButtonEvent : public Event {
-	public:
-		inline int GetButton() const { return m_button; }
 
-		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryMouseButton | EventCategoryInput)
-
-	protected:
-		ButtonEvent(int button)
-			: m_button(button) { }
-
-		int m_button;
-	};
-
-	class NUT_API ButtonPressedEvent : public ButtonEvent {
-	public:
-		ButtonPressedEvent(int button)
-			: ButtonEvent(button) { }
-
-		std::string ToString() const override {
-			std::stringstream ss;
-			ss << "KeyPressedEvent: " << m_button;
-			return ss.str();
-		}
-
-		EVENT_CLASS_TYPE(ButtonPressed)
-	};
-
-	class NUT_API ButtonReleasedEvent : public ButtonEvent {
-	public:
-		ButtonReleasedEvent(int button)
-			: ButtonEvent(button) { }
-
-
-		std::string ToString() const override {
-			std::stringstream ss;
-			ss << "KeyReleasedEvent: " << m_button;
-			return ss.str();
-		}
-
-		EVENT_CLASS_TYPE(ButtonReleased)
-	};
 }

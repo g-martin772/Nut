@@ -9,6 +9,11 @@ workspace "Nut"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+IncludeDir = {}
+IncludeDir["GLFW"] = "Nut/vendor/GLFW"
+
+include "Nut/vendor/GLFW"
+
 project "Nut"
     location "Nut"
     kind "SharedLib"
@@ -28,7 +33,13 @@ project "Nut"
 
     includedirs {
         "%{prj.name}/src",
-        "%{prj.name}/vendor/spdlog/include"
+        "%{prj.name}/vendor/spdlog/include",
+        "%{IncludeDir.GLFW}"
+    }
+
+    links{
+        "GLFW",
+        "opengl32.lib"
     }
 
     filter "system:windows"
@@ -51,11 +62,11 @@ project "Nut"
         symbols "On"
 
     filter "configurations:Release"
-        defines "NT_Release"
+        defines "NT_RELEASE"
         optimize "On"
 
     filter "configurations:Dist"
-        defines "NT_Dist"
+        defines "NT_DIST"
         optimize "On"
 
 
@@ -98,9 +109,9 @@ project "Sandbox"
             symbols "On"
     
         filter "configurations:Release"
-            defines "NT_Release"
+            defines "NT_RELEASE"
             optimize "On"
     
         filter "configurations:Dist"
-            defines "NT_Dist"
+            defines "NT_DIST"
             optimize "On"
