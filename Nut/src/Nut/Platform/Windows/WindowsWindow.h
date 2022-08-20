@@ -5,6 +5,7 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "../../Window.h"
+#include "Nut/Renderer/GraphicsContext.h"
 
 namespace Nut {
 	class WindowsWindow : public Window {
@@ -28,6 +29,8 @@ namespace Nut {
 		virtual void Shutdown();
 	private:
 		GLFWwindow* m_Window;
+
+		GraphicsContext* m_Context;
 
 		struct WindowData {
 			std::string Title;

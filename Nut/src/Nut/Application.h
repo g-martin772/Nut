@@ -29,6 +29,8 @@ namespace Nut {
 		bool WindoClose(WindowCloseEvent& e);
 		LayerStack m_LayerStack;
 		static Application* s_Instance;
+
+		unsigned int m_VertexArray, m_VertexBuffer, m_IndexBuffer;
 	private:
 		ImGuiLayer* m_ImGuiLayer;
 	};
