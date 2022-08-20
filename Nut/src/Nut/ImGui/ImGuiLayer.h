@@ -2,8 +2,10 @@
 
 #include "Nut/Layer.h"
 #include "../vendor/imgui/imgui.h"
+#include "../vendor/imgui/imgui_internal.h"
 #include "Nut/ImGui/imgui_impl_opengl3.h"
 #include "../vendor/GLFW/include/GLFW/glfw3.h"
+
 
 
 namespace Nut {
@@ -16,6 +18,7 @@ namespace Nut {
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void OnImGuiRender() override;
+
 
 		void Begin();
 		void End();

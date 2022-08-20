@@ -10,4 +10,7 @@
 #include "Nut/KeyCodes.h"
 #include "Nut/Input.h"
 
+#include "../vendor/imgui/imgui_internal.h"
+#include "../vendor/imgui/imgui.h"
+
 #include "Nut/Entrypoint.h"

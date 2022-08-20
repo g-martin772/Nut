@@ -65,11 +65,11 @@ namespace Nut {
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
 
-				m_ImGuiLayer->Begin();
+			m_ImGuiLayer->Begin();
 			for (Layer* layer : m_LayerStack) {
 				layer->OnImGuiRender();
 			}
-				m_ImGuiLayer->End();
+			m_ImGuiLayer->End();
 
 			m_Window->OnUpdate();
 		}

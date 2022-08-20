@@ -3,7 +3,7 @@
 #include "../vendor/GLFW/include/GLFW/glfw3native.h"
 #include "Nut/Application.h"
 
-#define IMGUI_IMPL_API
+#define IMGUI_IMPL_API __declspec(dllexport)
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 
@@ -26,7 +26,7 @@ namespace Nut {
 
 	void ImGuiLayer::OnAttach() {
 		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
+		ImGui::SetCurrentContext(ImGui::CreateContext());
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
 		io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
@@ -91,7 +91,7 @@ namespace Nut {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		Application& app = Application::Get();
 
-		io.DisplaySize = ImVec2(app.GetWindow().GetWidth(), app.GetWindow().GetWidth());
+		io.DisplaySize = ImVec2(app.GetWindow().GetWidth(), app.GetWindow().GetHeight());
 
 		//Rendering stuff
 		ImGui::Render();
@@ -104,6 +104,4 @@ namespace Nut {
 			glfwMakeContextCurrent(backup_current_context);
 		}
 	}
-
-	
 }

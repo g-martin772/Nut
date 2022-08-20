@@ -5,10 +5,14 @@
 #include "ntpch.h"
 
 #ifdef NT_PLATFORM_WINDOWS
-	#ifdef NT_BUILD_DLL
-		#define NUT_API __declspec(dllexport)
+	#if NT_DYNAMIC_LINK
+		#ifdef NT_BUILD_DLL
+			#define NUT_API __declspec(dllexport)
+		#else
+			#define NUT_API __declspec(dllimport)
+		#endif
 	#else
-		#define NUT_API __declspec(dllimport)
+		#define NUT_API
 	#endif
 #else
 	#error Nuts for Windows

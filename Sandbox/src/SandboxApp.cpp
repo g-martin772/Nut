@@ -1,23 +1,27 @@
 #include <Nut.h>
 
-#include "../../../vendor/imgui/imgui.h"
-
 class ExampleLayer : public Nut::Layer {
 public:
 	ExampleLayer()
 		:Layer("Example"){}
 
 	void OnUpdate() override {
-		if (Nut::Input::IsKeyPressed(NT_KEY_A))
-			NT_TRACE("A has been pressed");
+		
 	}
 
 	void OnEvent(Nut::Event& e) override {
 		//NT_TRACE("{0}", e);
 	}
 
-	void OnAttach() override { return; }
+	void OnAttach() override { 
+	}
 	void OnDetach() override { return; }
+
+	void OnImGuiRender() override {
+		ImGui::Begin("test");
+		ImGui::Text("Hello World");
+		ImGui::End();
+	}
 };
 
 class Sandbox : public Nut::Application {

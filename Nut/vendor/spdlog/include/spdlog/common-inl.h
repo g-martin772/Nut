@@ -25,6 +25,7 @@ SPDLOG_INLINE const string_view_t &to_string_view(spdlog::level::level_enum l) S
     return level_string_views[l];
 }
 
+
 SPDLOG_INLINE const char *to_short_c_str(spdlog::level::level_enum l) SPDLOG_NOEXCEPT
 {
     return short_level_names[l];

@@ -25,8 +25,10 @@ group ""
 
 project "Nut"
     location "Nut"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C++"
+    cppdialect "C++17"
+    staticruntime"on"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("int/" .. outputdir .. "/%{prj.name}")
@@ -64,7 +66,6 @@ project "Nut"
     }
 
     filter "system:windows"
-        cppdialect "C++17"
         staticruntime "On"
         systemversion "latest"
 
@@ -75,32 +76,30 @@ project "Nut"
             "_WINDLL"
         }
 
-        postbuildcommands{
-            ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
-        }
-
     filter "configurations:Debug"
         defines "NT_DEBUG"
+        runtime "Debug"
         symbols "On"
-        buildoptions "/MDd"
 
     filter "configurations:Release"
         defines "NT_RELEASE"
+        runtime "Release"
         optimize "On"
-        buildoptions "/MD"
 
     filter "configurations:Dist"
         defines "NT_DIST"
+        runtime "Release"
         optimize "On"
-        buildoptions "/MD"
 
 
 
 project "Sandbox"
         location "Sandbox"
         kind "ConsoleApp"
+        staticruntime "On"
 
         language "C++"
+        cppdialect "C++17"
 
         targetdir ("bin/" .. outputdir .. "/%{prj.name}")
         objdir ("int/" .. outputdir .. "/%{prj.name}")
@@ -117,7 +116,8 @@ project "Sandbox"
         }
 
         links{
-            "Nut"
+            "Nut",
+            "ImGui"
         }
     
         filter "system:windows"
@@ -131,15 +131,15 @@ project "Sandbox"
     
         filter "configurations:Debug"
             defines "NT_DEBUG"
+            runtime "Debug"
             symbols "On"
-            buildoptions "/MDd"
     
         filter "configurations:Release"
             defines "NT_RELEASE"
+            runtime "Release"
             optimize "On"
-            buildoptions "/MD"
     
         filter "configurations:Dist"
             defines "NT_DIST"
+            runtime "Release"
             optimize "On"
-            buildoptions "/MD"
