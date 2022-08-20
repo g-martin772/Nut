@@ -40,11 +40,11 @@ project "Nut"
         "%{prj.name}/src/**.hpp",
         "%{prj.name}/src/**.inl",
         "%{prj.name}/src/**.c",
-        "%{prj.name}/vendor/**.h",
-        "%{prj.name}/vendor/**.cpp",
-        "%{prj.name}/vendor/**.hpp",
-        "%{prj.name}/vendor/**.inl",
-        "%{prj.name}/vendor/**.c"
+        "%{prj.name}/vendor/glm/glm/**.h",
+        "%{prj.name}/vendor/glm/glm/**.cpp",
+        "%{prj.name}/vendor/glm/glm/**.hpp",
+        "%{prj.name}/vendor/glm/glm/**.inl",
+        "%{prj.name}/vendor/glm/glm/**.c"
     }
 
     includedirs {

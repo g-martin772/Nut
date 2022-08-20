@@ -1,5 +1,7 @@
 #include <Nut.h>
 
+#include "../../../vendor/imgui/imgui.h"
+
 class ExampleLayer : public Nut::Layer {
 public:
 	ExampleLayer()
@@ -22,7 +24,6 @@ class Sandbox : public Nut::Application {
 public:
 	Sandbox() {
 		PushLayer(new ExampleLayer());
-		PushOverlay(new Nut::ImGuiLayer());
 	}
 
 	~Sandbox() {

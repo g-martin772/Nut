@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Nut/ImGui/ImGuiLayer.h"
 #include "ntpch.h"
 #include "Nut/Core.h"
 #include "Nut/Window.h"
@@ -28,6 +29,8 @@ namespace Nut {
 		bool WindoClose(WindowCloseEvent& e);
 		LayerStack m_LayerStack;
 		static Application* s_Instance;
+	private:
+		ImGuiLayer* m_ImGuiLayer;
 	};
 
 

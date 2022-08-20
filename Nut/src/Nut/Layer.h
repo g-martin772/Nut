@@ -13,6 +13,7 @@ namespace Nut {
 		virtual void OnAttach() {}
 		virtual void OnUpdate() {}
 		virtual void OnDetach() {}
+		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& e) {}
 
 		const std::string& GetName() const { return m_DebugName; }
