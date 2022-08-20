@@ -6,6 +6,7 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "Input.h"
+#include "glm/glm.hpp"
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 #define EVENTLOGGER 0
