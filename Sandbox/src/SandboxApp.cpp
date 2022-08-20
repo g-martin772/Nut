@@ -6,11 +6,12 @@ public:
 		:Layer("Example"){}
 
 	void OnUpdate() override {
-		//NT_INFO("ExampleLayer::Update");
+		if (Nut::Input::IsKeyPressed(NT_KEY_A))
+			NT_TRACE("A has been pressed");
 	}
 
 	void OnEvent(Nut::Event& e) override {
-		NT_TRACE("{0}", e);
+		//NT_TRACE("{0}", e);
 	}
 
 	void OnAttach() override { return; }

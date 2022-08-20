@@ -1,4 +1,5 @@
 workspace "Nut"
+    startproject "Sandbox"
     architecture "x64"
 
     configurations {
@@ -14,9 +15,12 @@ IncludeDir["GLFW"] = "Nut/vendor/GLFW/include"
 IncludeDir["GLAD"] = "Nut/vendor/GLAD/include"
 IncludeDir["ImGui"] = "Nut/vendor/imgui"
 
-include "Nut/vendor/GLFW"
-include "Nut/vendor/GLAD"
-include "Nut/vendor/imgui"
+group "Dependencies"
+    include "Nut/vendor/GLFW"
+    include "Nut/vendor/GLAD"
+    include "Nut/vendor/imgui"
+group ""
+
 
 project "Nut"
     location "Nut"
@@ -58,6 +62,7 @@ project "Nut"
         defines {
             "NT_PLATFORM_WINDOWS",
             "NT_BUILD_DLL",
+            "NT_OPENGL",
             "_WINDLL"
         }
 

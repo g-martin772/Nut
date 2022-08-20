@@ -7,5 +7,7 @@
 #include "Nut/Application.h"
 #include "Nut/Events/MouseEvent.h"
 #include "Nut/ImGui/ImGuiLayer.h"
+#include "Nut/KeyCodes.h"
+#include "Nut/Input.h"
 
 #include "Nut/Entrypoint.h"
