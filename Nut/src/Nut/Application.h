@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Nut/ImGui/ImGuiLayer.h"
-#include "ntpch.h"
 #include "Nut/Core.h"
 #include "Nut/Window.h"
 #include "Nut/Events/AppEvent.h"
 #include "Nut/LayerStack.h"
+#include "Nut/Renderer/Shader.h"
 
 namespace Nut {
 	class NUT_API Application
@@ -31,6 +31,7 @@ namespace Nut {
 		static Application* s_Instance;
 
 		unsigned int m_VertexArray, m_VertexBuffer, m_IndexBuffer;
+		std::unique_ptr<Shader> m_Shader;
 	private:
 		ImGuiLayer* m_ImGuiLayer;
 	};
