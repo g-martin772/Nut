@@ -22,71 +22,6 @@ namespace Nut {
 		
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
-
-		m_VertexArray.reset(VertexArray::Create());
-
-		float vertices[3 * 3 * 3 * 4] = {
-			-0.5f, -0.5f, 0.0f, 0.2f, 0.5f, 0.2f, 1.0f,
-			 0.5f, -0.5f, 0.0f, 0.6f, 0.2f, 0.1f, 1.0f,
-			 0.0f,  0.5f, 0.0f, 0.0f, 0.8f, 0.8f, 1.0f
-		};
-
-		m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
-
-		{
-			BufferLayout layout = {
-				{ ShaderDataType::Float3, "a_Pos" },
-				{ ShaderDataType::Float4, "a_Clr" }
-			};
-			m_VertexBuffer->SetLayout(layout);
-		}
-
-		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
-		
-
-		uint32_t indices[3] = { 0, 1, 2 };
-		m_IndexBuffer.reset(IndexBuffer::Create(indices, 3));
-
-		m_VertexArray->AddIndexBuffer(m_IndexBuffer);
-
-		float vertices2[3 * 3 * 3 * 4] = {
-			-0.5f, -0.5f, 0.0f, 0.2f, 0.5f, 0.2f, 1.0f,
-			 0.5f, -0.5f, 0.0f, 0.6f, 0.2f, 0.1f, 1.0f,
-			 0.0f,  0.5f, 0.0f, 0.0f, 0.8f, 0.8f, 1.0f
-		};
-
-
-		std::string vertSrc = R"(
-			#version 330 core
-			
-			layout(location = 0) in vec3 a_Pos;
-			layout(location = 1) in vec4 a_Clr;
-
-			out vec3 v_Pos;
-			out vec4 v_Color;
-
-			void main() {
-				v_Pos = a_Pos;
-				v_Color = a_Clr;
-				gl_Position = vec4(a_Pos + 0.5, 1.0);
-			}
-		)";
-
-		std::string fragSrc = R"(
-			#version 330 core
-			
-			layout(location = 0) out vec4 color;
-
-			in vec3 v_Pos;
-			in vec4 v_Color;
-
-			void main() {
-				color = vec4(v_Pos * 0.5 + 0.5, 1.0);
-				color = v_Color;
-			}
-		)";
-
-		m_Shader.reset(new Shader(vertSrc, fragSrc));
 	}
 
 	Application::~Application() {
@@ -124,14 +59,6 @@ namespace Nut {
 
 	void Application::Run() {
 		while (m_Running) {
-			RenderCommand::SetClearColor({ 0.3, 0.1, 0.5, 1.0 });
-			RenderCommand::Clear();
-
-			Renderer::BeginScene();
-			m_Shader->Bind();
-			Renderer::Submit(m_VertexArray);
-			Renderer::EndScene();
-
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
 
