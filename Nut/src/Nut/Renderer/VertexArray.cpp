@@ -7,7 +7,7 @@
 Nut::VertexArray* Nut::VertexArray::Create()
 {
 	switch (Renderer::GetAPI()) {
-	case RendererAPI::OpenGL:	return new OpenGLVertexArray();
+	case RendererAPI::API::OpenGL:	return new OpenGLVertexArray();
 	}
 	NT_CORE_ASSERT(false, "RendererAPI::selected is currently not supported!")
 	return nullptr;

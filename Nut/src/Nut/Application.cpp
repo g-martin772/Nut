@@ -1,13 +1,12 @@
 #include "ntpch.h"
-#include "glad/glad.h"
 #include "Application.h"
 
 #include "Events/AppEvent.h"
 #include "Log.h"
-#include "GLFW/glfw3.h"
 #include "Input.h"
 #include "glm/glm.hpp"
 #include "Nut/LayerStack.h"
+#include "Nut/Renderer/Renderer.h"
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 #define EVENTLOGGER 0
@@ -55,10 +54,6 @@ namespace Nut {
 			 0.5f, -0.5f, 0.0f, 0.6f, 0.2f, 0.1f, 1.0f,
 			 0.0f,  0.5f, 0.0f, 0.0f, 0.8f, 0.8f, 1.0f
 		};
-
-		m_SquareVA.reset(VertexArray::Create());
-		std::shared_ptr<VertexBuffer> squareVB = std::make_shared<VertexBuffer>(VertexBuffer::Create(vertices2));
-		std::shared_ptr<VertexBuffer> squareVB = std::make_shared<VertexBuffer>();
 
 
 		std::string vertSrc = R"(
@@ -129,12 +124,13 @@ namespace Nut {
 
 	void Application::Run() {
 		while (m_Running) {
-			glClearColor(1, 1, 0, 1);
-			glClear(GL_COLOR_BUFFER_BIT);
+			RenderCommand::SetClearColor({ 0.3, 0.1, 0.5, 1.0 });
+			RenderCommand::Clear();
 
+			Renderer::BeginScene();
 			m_Shader->Bind();
-			m_VertexArray->Bind();
-			glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+			Renderer::Submit(m_VertexArray);
+			Renderer::EndScene();
 
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();

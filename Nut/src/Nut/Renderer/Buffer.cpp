@@ -9,7 +9,7 @@ namespace Nut{
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::OpenGL:
+		case RendererAPI::API::OpenGL:
 		{
 			return new OpenGLVertexBuffer(vertices, size);
 		}
@@ -24,7 +24,7 @@ namespace Nut{
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::OpenGL:
+		case RendererAPI::API::OpenGL:
 		{
 			return new OpenGLIndexBuffer(indices, size);
 		}
