@@ -37,6 +37,7 @@ public:
 			layout(location = 1) in vec4 a_Clr;
 
 			uniform mat4 u_VPM;
+			uniform mat4 u_MLM;
 
 			out vec3 v_Pos;
 			out vec4 v_Color;
@@ -44,7 +45,7 @@ public:
 			void main() {
 				v_Pos = a_Pos;
 				v_Color = a_Clr;
-				gl_Position = u_VPM * vec4(a_Pos + 0.5, 1.0);
+				gl_Position = u_VPM * u_MLM * vec4(a_Pos + 0.5, 1.0);
 			}
 		)";
 
@@ -82,10 +83,10 @@ public:
 		}
 
 		if (Nut::Input::IsKeyPressed(NT_KEY_A)) {
-			m_CameraRotation += m_CameraRotationSpeed * ts;
+			m_CameraRotation -= m_CameraRotationSpeed * ts;
 		}
 		else if (Nut::Input::IsKeyPressed(NT_KEY_D)) {
-			m_CameraRotation -= m_CameraRotationSpeed * ts;
+			m_CameraRotation += m_CameraRotationSpeed * ts;
 		}
 
 		Nut::RenderCommand::SetClearColor({ 0.3, 0.1, 0.5, 1.0 });
@@ -95,16 +96,20 @@ public:
 		m_Camera.SetRotation(m_CameraRotation);
 
 		Nut::Renderer::BeginScene(m_Camera);
-		Nut::Renderer::Submit(m_Shader, m_VertexArray);
+		for (int y = 0; y < 20; y++)
+		{
+			for (int x = 0; x < 20; x++)
+			{
+				glm::vec3 pos(x * 0.22, y * 0.22, 0.0f);
+				glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
+				Nut::Renderer::Submit(m_Shader, m_VertexArray, transform);
+			}
+		}
 		Nut::Renderer::EndScene();
 	}
 
-	void OnEvent(Nut::Event& e) override {
-		
-	}
-
-
-
+	void OnEvent(Nut::Event& e) override { return; }
 	void OnAttach() override { return; }
 	void OnDetach() override { return; }
 	void OnImGuiRender() override { return; }
@@ -117,10 +122,10 @@ private:
 	Nut::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition;
 
-	float m_CameraMovementSpeed = 0.1f;
+	float m_CameraMovementSpeed = 1.0f;
 
 	float m_CameraRotation = 0.0f;
-	float m_CameraRotationSpeed = 2.0f;
+	float m_CameraRotationSpeed = 5.0f;
 };
 
 class Sandbox : public Nut::Application {
