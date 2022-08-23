@@ -3,6 +3,7 @@
 #include "ntpch.h"
 #include "Nut/Core.h"
 #include "Nut/Events/Event.h"
+#include "Nut/Core/Timestep.h"
 
 namespace Nut {
 	class NUT_API Layer {
@@ -11,7 +12,7 @@ namespace Nut {
 		virtual ~Layer() = default;
 
 		virtual void OnAttach() {}
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(Timestep ts) {}
 		virtual void OnDetach() {}
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& e) {}

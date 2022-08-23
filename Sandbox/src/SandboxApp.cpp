@@ -65,25 +65,27 @@ public:
 		m_Shader.reset(new Nut::Shader(vertSrc, fragSrc));
 	}
 
-	void OnUpdate() override {
+	void OnUpdate(Nut::Timestep ts) override {
+		NT_TRACE("Deltatime: {0}s ({1})", ts.GetSeconds(), ts.GetMilliseconds());
+
 		if (Nut::Input::IsKeyPressed(NT_KEY_LEFT)) {
-			m_CameraPosition.x -= m_CameraMovementSpeed;
+			m_CameraPosition.x -= m_CameraMovementSpeed * ts;
 		}
 		else if (Nut::Input::IsKeyPressed(NT_KEY_RIGHT)) {
-			m_CameraPosition.x += m_CameraMovementSpeed;
+			m_CameraPosition.x += m_CameraMovementSpeed * ts;
 		}
 		if (Nut::Input::IsKeyPressed(NT_KEY_UP)) {
-			m_CameraPosition.y += m_CameraMovementSpeed;
+			m_CameraPosition.y += m_CameraMovementSpeed * ts;
 		}
 		else if (Nut::Input::IsKeyPressed(NT_KEY_DOWN)) {
-			m_CameraPosition.y -= m_CameraMovementSpeed;
+			m_CameraPosition.y -= m_CameraMovementSpeed * ts;
 		}
 
 		if (Nut::Input::IsKeyPressed(NT_KEY_A)) {
-			m_CameraRotation += m_CameraRotationSpeed;
+			m_CameraRotation += m_CameraRotationSpeed * ts;
 		}
 		else if (Nut::Input::IsKeyPressed(NT_KEY_D)) {
-			m_CameraRotation -= m_CameraRotationSpeed;
+			m_CameraRotation -= m_CameraRotationSpeed * ts;
 		}
 
 		Nut::RenderCommand::SetClearColor({ 0.3, 0.1, 0.5, 1.0 });

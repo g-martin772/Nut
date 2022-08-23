@@ -16,6 +16,7 @@
 #include "Nut/Renderer/RenderCommand.h"
 #include "Nut/Renderer/Renderer.h"
 #include "Nut/Renderer/Shader.h"
+#include "Nut/Core/Timestep.h"
 
 #include "../vendor/imgui/imgui_internal.h"
 #include "../vendor/imgui/imgui.h"

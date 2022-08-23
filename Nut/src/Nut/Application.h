@@ -9,6 +9,7 @@
 #include "Nut/Renderer/Buffer.h"
 #include "Nut/Renderer/VertexArray.h"
 #include "Nut/Renderer/OrthographicCamera.h"
+#include "Nut/Core/Timestep.h"
 
 namespace Nut {
 	class NUT_API Application
@@ -32,6 +33,7 @@ namespace Nut {
 		bool WindoClose(WindowCloseEvent& e);
 		LayerStack m_LayerStack;
 		static Application* s_Instance;
+		float m_LastFrameTime = 0.0f;
 	private:
 		ImGuiLayer* m_ImGuiLayer;
 	};
