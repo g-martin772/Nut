@@ -22,9 +22,15 @@ namespace Nut {
 		std::string shaderSource = ReadShaderFile(path);
 		std::unordered_map<GLenum, std::string> processedShaderSourceMap = PreProcess(shaderSource);
 		Compile(processedShaderSourceMap);
+
+		auto lastSlash = path.find_last_of("/\\");
+		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+		auto lastDot = path.rfind(".");
+		auto count = lastDot == std::string::npos ? path.size() - lastSlash : lastDot - lastSlash;
+		m_Name = path.substr(lastSlash, count);
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& vertexSrc, const std::string FragmentSrc)
+	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string FragmentSrc) : m_Name(name)
 	{
 		std::unordered_map<GLenum, std::string> processedShaderSourceMap;
 		processedShaderSourceMap[GL_VERTEX_SHADER] = vertexSrc;
@@ -40,7 +46,7 @@ namespace Nut {
 	void OpenGLShader::Compile(std::unordered_map<GLenum, std::string> shaderSources)
 	{
 		m_RendererID = glCreateProgram();
-		std::vector<GLenum> glShaderIDs(shaderSources.size());
+		std::vector<GLenum> glShaderIDs;
 		for (auto& kv : shaderSources) {
 			GLenum type = kv.first;
 			const std::string& source = kv.second;
@@ -202,7 +208,7 @@ namespace Nut {
 
 	std::string OpenGLShader::ReadShaderFile(const std::string& path)
 	{
-		std::ifstream in(path, std::ios::in, std::ios::binary);
+		std::ifstream in(path, std::ios::in | std::ios::binary);
 		std::string result;
 
 		if (in) {

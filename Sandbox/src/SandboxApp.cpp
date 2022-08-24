@@ -56,14 +56,14 @@ public:
 			}
 		)";
 
-		m_Shader.reset(Nut::Shader::Create(vertSrc, fragSrc));
+		m_Shader.Add(Nut::Shader::Create("Flat", vertSrc, fragSrc));
 
-		m_TextureShader.reset(Nut::Shader::Create("assets/shaders/Texture.glsl"));
+		m_Shader.Load("assets/shaders/Texture.glsl");
 
 		m_Texture = (Nut::Texture2D::Create("assets/textures/Checkerboard.png"));
 		m_Texture2 = (Nut::Texture2D::Create("assets/textures/ChernoLogo.png"));
-		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_TextureShader)->Bind();
-		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
+		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader.Get("Texture"))->Bind();
+		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader.Get("Texture"))->UploadUniformInt("u_Texture", 0);
 	}
 
 	void OnUpdate(Nut::Timestep ts) override {
@@ -95,8 +95,8 @@ public:
 		m_Camera.SetPosition(m_CameraPosition);
 		m_Camera.SetRotation(m_CameraRotation);
 
-		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader)->Bind();
-		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader)->UploadUniformFloat3("u_Color", m_Color);
+		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader.Get("Flat"))->Bind();
+		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader.Get("Flat"))->UploadUniformFloat3("u_Color", m_Color);
 
 		Nut::Renderer::BeginScene(m_Camera);
 
@@ -107,15 +107,15 @@ public:
 				glm::vec3 pos(x * 0.22, y * 0.22, 0.0f);
 				glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
-				Nut::Renderer::Submit(m_Shader, m_VertexArray, transform);
+				Nut::Renderer::Submit(m_Shader.Get("Flat"), m_VertexArray, transform);
 			}
 		}
 
 		m_Texture->Bind();
-		Nut::Renderer::Submit(m_TextureShader, m_VertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		Nut::Renderer::Submit(m_Shader.Get("Texture"), m_VertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 		m_Texture2->Bind();
-		Nut::Renderer::Submit(m_TextureShader, m_VertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		Nut::Renderer::Submit(m_Shader.Get("Texture"), m_VertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 		Nut::Renderer::EndScene();
 	}
@@ -131,9 +131,8 @@ public:
 		return; 
 	}
 private:
-	Nut::Ref<Nut::VertexBuffer> m_VertexBuffer;	
-	Nut::Ref<Nut::Shader> m_Shader;
-	Nut::Ref<Nut::Shader> m_TextureShader;
+	Nut::ShaderLibrary m_Shader;
+	Nut::Ref<Nut::VertexBuffer> m_VertexBuffer;
 
 	Nut::Ref<Nut::IndexBuffer> m_IndexBuffer;
 	Nut::Ref<Nut::VertexArray> m_VertexArray;

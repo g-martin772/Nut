@@ -10,8 +10,10 @@ namespace Nut {
 	class OpenGLShader : public Shader{
 	public:
 		OpenGLShader(const std::string& path);
-		OpenGLShader(const std::string& vertexSrc, const std::string FragmentSrc);
+		OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string FragmentSrc);
 		~OpenGLShader();
+
+		const std::string& GetName() const override { return m_Name; }
 
 		void Bind() const override;
 		void UnBind() const override;
@@ -36,5 +38,6 @@ namespace Nut {
 		void Compile(std::unordered_map<GLenum, std::string> shaderSources);
 	private:
 		uint32_t m_RendererID;
+		std::string m_Name;
 	};
 }
