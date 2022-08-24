@@ -8,27 +8,26 @@ public:
 		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f), m_CameraPosition(0.0f) {
 		m_VertexArray.reset(Nut::VertexArray::Create());
 
-		float vertices[3 * 3 * 3 * 4] = {
-			-0.5f, -0.5f, 0.0f, 0.2f, 0.5f, 0.2f, 1.0f,
-			 0.5f, -0.5f, 0.0f, 0.6f, 0.2f, 0.1f, 1.0f,
-			 0.0f,  0.5f, 0.0f, 0.0f, 0.8f, 0.8f, 1.0f
+		float vertices[] = {
+			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f
 		};
 
 		m_VertexBuffer.reset(Nut::VertexBuffer::Create(vertices, sizeof(vertices)));
 
-		{
-			Nut::BufferLayout layout = {
-				{ Nut::ShaderDataType::Float3, "a_Pos" },
-				{ Nut::ShaderDataType::Float4, "a_Clr" }
-			};
-			m_VertexBuffer->SetLayout(layout);
-		}
-
+		
+		Nut::BufferLayout layout = {
+			{ Nut::ShaderDataType::Float3, "a_Pos" },
+			{ Nut::ShaderDataType::Float2, "a_TexCoord" }
+		};
+		m_VertexBuffer->SetLayout(layout);
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 
 
-		uint32_t indices[3] = { 0, 1, 2 };
-		m_IndexBuffer.reset(Nut::IndexBuffer::Create(indices, 3));
+		uint32_t indices[] = { 0, 1, 3, 2, 1, 3 };
+		m_IndexBuffer.reset(Nut::IndexBuffer::Create(indices, 6));
 
 		m_VertexArray->AddIndexBuffer(m_IndexBuffer);
 
@@ -36,18 +35,12 @@ public:
 			#version 330 core
 			
 			layout(location = 0) in vec3 a_Pos;
-			layout(location = 1) in vec4 a_Clr;
 
 			uniform mat4 u_VPM;
 			uniform mat4 u_MLM;
 
-			out vec3 v_Pos;
-			out vec4 v_Color;
-
 			void main() {
-				v_Pos = a_Pos;
-				v_Color = a_Clr;
-				gl_Position = u_VPM * u_MLM * vec4(a_Pos + 0.5, 1.0);
+				gl_Position = u_VPM * u_MLM * vec4(a_Pos, 1.0);
 			}
 		)";
 
@@ -58,17 +51,49 @@ public:
 
 			uniform vec3 u_Color;
 
-			in vec3 v_Pos;
-			in vec4 v_Color;
-
 			void main() {
-				color = vec4(v_Pos * 0.5 + 0.5, 1.0);
-				color = v_Color;
 				color = vec4(u_Color, 1.0);
 			}
 		)";
 
 		m_Shader.reset(Nut::Shader::Create(vertSrc, fragSrc));
+
+		std::string TextureVertSrc = R"(
+			#version 330 core
+			
+			layout(location = 0) in vec3 a_Pos;
+			layout(location = 1) in vec2 a_TexCoord;
+
+			uniform mat4 u_VPM;
+			uniform mat4 u_MLM;
+
+			out vec2 v_TexCoord;
+
+			void main() {
+				v_TexCoord = a_TexCoord;
+				gl_Position = u_VPM * u_MLM * vec4(a_Pos, 1.0);
+			}
+		)";
+
+		std::string TextureFragSrc = R"(
+			#version 330 core
+			
+			layout(location = 0) out vec4 color;
+
+			uniform sampler2D u_Texture;
+
+			in vec2 v_TexCoord;
+
+			void main() {
+				color = texture(u_Texture, v_TexCoord);
+			}
+		)";
+
+		m_TextureShader.reset(Nut::Shader::Create(TextureVertSrc, TextureFragSrc));
+
+		m_Texture = (Nut::Texture2D::Create("assets/textures/Checkerboard.png"));
+		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_TextureShader)->Bind();
+		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
 	}
 
 	void OnUpdate(Nut::Timestep ts) override {
@@ -103,6 +128,7 @@ public:
 		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader)->UploadUniformFloat3("u_Color", m_Color);
 
 		Nut::Renderer::BeginScene(m_Camera);
+
 		for (int y = 0; y < 20; y++)
 		{
 			for (int x = 0; x < 20; x++)
@@ -113,12 +139,17 @@ public:
 				Nut::Renderer::Submit(m_Shader, m_VertexArray, transform);
 			}
 		}
+
+		m_Texture->Bind();
+		Nut::Renderer::Submit(m_TextureShader, m_VertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+
 		Nut::Renderer::EndScene();
 	}
 
 	void OnEvent(Nut::Event& e) override { return; }
 	void OnAttach() override { return; }
 	void OnDetach() override { return; }
+
 	void OnImGuiRender() override {
 		ImGui::Begin("Settings");
 		ImGui::ColorEdit3("TriangleColor", glm::value_ptr(m_Color));
@@ -126,10 +157,13 @@ public:
 		return; 
 	}
 private:
+	Nut::Ref<Nut::VertexBuffer> m_VertexBuffer;	
 	Nut::Ref<Nut::Shader> m_Shader;
-	Nut::Ref<Nut::VertexBuffer> m_VertexBuffer;
+	Nut::Ref<Nut::Shader> m_TextureShader;
+
 	Nut::Ref<Nut::IndexBuffer> m_IndexBuffer;
 	Nut::Ref<Nut::VertexArray> m_VertexArray;
+	Nut::Ref<Nut::Texture2D> m_Texture;
 
 	Nut::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition;

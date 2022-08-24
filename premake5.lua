@@ -15,6 +15,7 @@ IncludeDir["GLFW"] = "Nut/vendor/GLFW/include"
 IncludeDir["GLAD"] = "Nut/vendor/GLAD/include"
 IncludeDir["ImGui"] = "Nut/vendor/imgui"
 IncludeDir["glm"] = "Nut/vendor/glm"
+IncludeDir["stb"] = "Nut/vendor/stb"
 
 group "Dependencies"
     include "Nut/vendor/GLFW"
@@ -46,7 +47,9 @@ project "Nut"
         "%{prj.name}/vendor/glm/glm/**.cpp",
         "%{prj.name}/vendor/glm/glm/**.hpp",
         "%{prj.name}/vendor/glm/glm/**.inl",
-        "%{prj.name}/vendor/glm/glm/**.c"
+        "%{prj.name}/vendor/glm/glm/**.c",
+        "%{prj.name}/vendor/stb/**.h",
+        "%{prj.name}/vendor/stb/**.cpp",
     }
 
     includedirs {
@@ -55,6 +58,7 @@ project "Nut"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.glm}",
+        "%{IncludeDir.stb}",
         "%{IncludeDir.ImGui}"
     }
 
