@@ -1,4 +1,6 @@
 #include <Nut.h>
+#include "../../Nut/vendor/glm/glm/gtc/type_ptr.hpp"
+#include <Nut/Platform/OpenGL/OpenGLShader.h>
 
 class ExampleLayer : public Nut::Layer {
 public:
@@ -54,20 +56,23 @@ public:
 			
 			layout(location = 0) out vec4 color;
 
+			uniform vec3 u_Color;
+
 			in vec3 v_Pos;
 			in vec4 v_Color;
 
 			void main() {
 				color = vec4(v_Pos * 0.5 + 0.5, 1.0);
 				color = v_Color;
+				color = vec4(u_Color, 1.0);
 			}
 		)";
 
-		m_Shader.reset(new Nut::Shader(vertSrc, fragSrc));
+		m_Shader.reset(Nut::Shader::Create(vertSrc, fragSrc));
 	}
 
 	void OnUpdate(Nut::Timestep ts) override {
-		NT_TRACE("Deltatime: {0}s ({1})", ts.GetSeconds(), ts.GetMilliseconds());
+		//NT_TRACE("Deltatime: {0}s ({1})", ts.GetSeconds(), ts.GetMilliseconds());
 
 		if (Nut::Input::IsKeyPressed(NT_KEY_LEFT)) {
 			m_CameraPosition.x -= m_CameraMovementSpeed * ts;
@@ -95,6 +100,8 @@ public:
 		m_Camera.SetPosition(m_CameraPosition);
 		m_Camera.SetRotation(m_CameraRotation);
 
+		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader)->UploadUniformFloat3("u_Color", m_Color);
+
 		Nut::Renderer::BeginScene(m_Camera);
 		for (int y = 0; y < 20; y++)
 		{
@@ -112,7 +119,12 @@ public:
 	void OnEvent(Nut::Event& e) override { return; }
 	void OnAttach() override { return; }
 	void OnDetach() override { return; }
-	void OnImGuiRender() override { return; }
+	void OnImGuiRender() override {
+		ImGui::Begin("Settings");
+		ImGui::ColorEdit3("TriangleColor", glm::value_ptr(m_Color));
+		ImGui::End();
+		return; 
+	}
 private:
 	std::shared_ptr<Nut::Shader> m_Shader;
 	std::shared_ptr<Nut::VertexBuffer> m_VertexBuffer;
@@ -126,6 +138,8 @@ private:
 
 	float m_CameraRotation = 0.0f;
 	float m_CameraRotationSpeed = 5.0f;
+
+	glm::vec3 m_Color;
 };
 
 class Sandbox : public Nut::Application {

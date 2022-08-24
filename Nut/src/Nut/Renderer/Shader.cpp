@@ -3,102 +3,24 @@
 
 #include "glad/glad.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <Nut/Renderer/Renderer.h>
+#include <Nut/Platform/OpenGL/OpenGLShader.h>
 
 
 namespace Nut {
-	Shader::Shader(const std::string& vertexSrc, const std::string FragmentSrc)
+	Shader* Shader::Create(const std::string& vertexSrc, const std::string FragmentSrc)
 	{
-		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-		const GLchar* source = (const GLchar*)vertexSrc.c_str();
-		glShaderSource(vertexShader, 1, &source, 0);
-		glCompileShader(vertexShader);
-
-		GLint isCompiled = 0;
-		glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == false) {
-			GLint maxLength = 0;
-			glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(vertexShader, maxLength, &maxLength, &infoLog[0]);
-			
-			glDeleteShader(vertexShader);
-
-			NT_CORE_ERROR("VertexShader compilation failure!");
-			NT_CORE_ERROR("{0}", infoLog.data());
-			NT_CORE_ASSERT(false, "ShaderConstruction failed, check log!");
-			return;
+		switch(Renderer::GetAPI())
+		{
+		case RendererAPI::API::OpenGL:
+		{
+			return new OpenGLShader(vertexSrc, FragmentSrc);
 		}
-
-		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		source = (const GLchar*)FragmentSrc.c_str();
-		glShaderSource(fragmentShader, 1, &source, 0);
-		glCompileShader(fragmentShader);
-
-		glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == false) {
-			GLint maxLength = 0;
-			glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &infoLog[0]);
-
-			glDeleteShader(fragmentShader);
-			glDeleteShader(vertexShader);
-
-			NT_CORE_ERROR("FragmentShader compilation failure!");
-			NT_CORE_ERROR("{0}", infoLog.data());
-			NT_CORE_ASSERT(false, "ShaderConstruction failed, check log!");
-			return;
+		default:
+			NT_WARN("No API Selected!");
+			NT_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+			break;
 		}
-
-		m_RendererID = glCreateProgram();
-		glAttachShader(m_RendererID, vertexShader);
-		glAttachShader(m_RendererID, fragmentShader);
-		glLinkProgram(m_RendererID);
-
-		GLint isLinked = 0;
-		glGetProgramiv(m_RendererID, GL_LINK_STATUS, &isLinked);
-		if (isLinked == GL_FALSE) {
-			GLint maxLength = 0;
-			glGetProgramiv(m_RendererID, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(m_RendererID, maxLength, &maxLength, &infoLog[0]);
-
-			glDeleteProgram(m_RendererID);
-			glDeleteShader(vertexShader);
-			glDeleteShader(fragmentShader);
-
-			NT_CORE_ERROR("ShaderProgram linking failure!");
-			NT_CORE_ERROR("{0}", infoLog.data());
-			NT_CORE_ASSERT(false, "ShaderConstruction failed, check log!");
-			return;
-		}
-
-		glDetachShader(m_RendererID, vertexShader);
-		glDetachShader(m_RendererID, fragmentShader);
+		return nullptr;
 	}
-
-	Shader::~Shader()
-	{
-		glDeleteProgram(m_RendererID);
-	}
-
-	void Shader::Bind() const
-	{
-		glUseProgram(m_RendererID);
-	}
-
-	void Shader::UnBind() const
-	{
-		glUseProgram(0);
-	}
-
-	void Shader::UploadUniformMat4(const std::string& name, const glm::mat4& matrix)
-	{
-		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
-		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
-	}
-
 }
