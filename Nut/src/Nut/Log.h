@@ -10,12 +10,12 @@ namespace Nut {
 	public:
 		static void Init();
 
-		static std::shared_ptr<spdlog::logger> GetCoreLogger() {
-			static std::shared_ptr<spdlog::logger> s_CoreLogger = spdlog::stdout_color_mt("NUT");
+		static Ref<spdlog::logger> GetCoreLogger() {
+			static Ref<spdlog::logger> s_CoreLogger = spdlog::stdout_color_mt("NUT");
 			return s_CoreLogger;
 		}
-		static std::shared_ptr<spdlog::logger> GetClientLogger() {
-			static std::shared_ptr<spdlog::logger> s_ClientLogger = spdlog::stdout_color_mt("APP");
+		static Ref<spdlog::logger> GetClientLogger() {
+			static Ref<spdlog::logger> s_ClientLogger = spdlog::stdout_color_mt("APP");
 			return s_ClientLogger;
 		}
 	};

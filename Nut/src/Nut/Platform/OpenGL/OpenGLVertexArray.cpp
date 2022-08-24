@@ -45,7 +45,7 @@ void Nut::OpenGLVertexArray::UnBind() const
 
 }
 
-void Nut::OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
+void Nut::OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 {
 	glBindVertexArray(m_RendererID);
 	vertexBuffer->Bind();
@@ -61,7 +61,7 @@ void Nut::OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>
 	m_VertexBuffers.push_back(vertexBuffer);
 }
 
-void Nut::OpenGLVertexArray::AddIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
+void Nut::OpenGLVertexArray::AddIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 {
 	glBindVertexArray(m_RendererID);
 	indexBuffer->Bind();

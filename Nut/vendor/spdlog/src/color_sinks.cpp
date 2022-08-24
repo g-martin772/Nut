@@ -32,7 +32,8 @@ template class SPDLOG_API spdlog::sinks::ansicolor_stderr_sink<spdlog::details::
 
 // factory methods for color loggers
 #include "spdlog/sinks/stdout_color_sinks-inl.h"
-template SPDLOG_API std::shared_ptr<spdlog::logger> spdlog::stdout_color_mt<spdlog::synchronous_factory>(
+template SPDLOG_API 
+_ptr<spdlog::logger> spdlog::stdout_color_mt<spdlog::synchronous_factory>(
     const std::string &logger_name, color_mode mode);
 template SPDLOG_API std::shared_ptr<spdlog::logger> spdlog::stdout_color_st<spdlog::synchronous_factory>(
     const std::string &logger_name, color_mode mode);

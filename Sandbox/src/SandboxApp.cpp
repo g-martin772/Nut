@@ -126,10 +126,10 @@ public:
 		return; 
 	}
 private:
-	std::shared_ptr<Nut::Shader> m_Shader;
-	std::shared_ptr<Nut::VertexBuffer> m_VertexBuffer;
-	std::shared_ptr<Nut::IndexBuffer> m_IndexBuffer;
-	std::shared_ptr<Nut::VertexArray> m_VertexArray;
+	Nut::Ref<Nut::Shader> m_Shader;
+	Nut::Ref<Nut::VertexBuffer> m_VertexBuffer;
+	Nut::Ref<Nut::IndexBuffer> m_IndexBuffer;
+	Nut::Ref<Nut::VertexArray> m_VertexArray;
 
 	Nut::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition;
