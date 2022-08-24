@@ -58,40 +58,10 @@ public:
 
 		m_Shader.reset(Nut::Shader::Create(vertSrc, fragSrc));
 
-		std::string TextureVertSrc = R"(
-			#version 330 core
-			
-			layout(location = 0) in vec3 a_Pos;
-			layout(location = 1) in vec2 a_TexCoord;
-
-			uniform mat4 u_VPM;
-			uniform mat4 u_MLM;
-
-			out vec2 v_TexCoord;
-
-			void main() {
-				v_TexCoord = a_TexCoord;
-				gl_Position = u_VPM * u_MLM * vec4(a_Pos, 1.0);
-			}
-		)";
-
-		std::string TextureFragSrc = R"(
-			#version 330 core
-			
-			layout(location = 0) out vec4 color;
-
-			uniform sampler2D u_Texture;
-
-			in vec2 v_TexCoord;
-
-			void main() {
-				color = texture(u_Texture, v_TexCoord);
-			}
-		)";
-
-		m_TextureShader.reset(Nut::Shader::Create(TextureVertSrc, TextureFragSrc));
+		m_TextureShader.reset(Nut::Shader::Create("assets/shaders/Texture.glsl"));
 
 		m_Texture = (Nut::Texture2D::Create("assets/textures/Checkerboard.png"));
+		m_Texture2 = (Nut::Texture2D::Create("assets/textures/ChernoLogo.png"));
 		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_TextureShader)->Bind();
 		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
 	}
@@ -125,6 +95,7 @@ public:
 		m_Camera.SetPosition(m_CameraPosition);
 		m_Camera.SetRotation(m_CameraRotation);
 
+		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader)->Bind();
 		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader)->UploadUniformFloat3("u_Color", m_Color);
 
 		Nut::Renderer::BeginScene(m_Camera);
@@ -141,6 +112,9 @@ public:
 		}
 
 		m_Texture->Bind();
+		Nut::Renderer::Submit(m_TextureShader, m_VertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+
+		m_Texture2->Bind();
 		Nut::Renderer::Submit(m_TextureShader, m_VertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 		Nut::Renderer::EndScene();
@@ -164,6 +138,7 @@ private:
 	Nut::Ref<Nut::IndexBuffer> m_IndexBuffer;
 	Nut::Ref<Nut::VertexArray> m_VertexArray;
 	Nut::Ref<Nut::Texture2D> m_Texture;
+	Nut::Ref<Nut::Texture2D> m_Texture2;
 
 	Nut::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition;

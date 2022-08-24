@@ -10,6 +10,8 @@ namespace Nut {
 		Renderer();
 		~Renderer();
 
+		static void Init();
+
 		static void BeginScene(OrthographicCamera& camera);
 		static void EndScene();
 

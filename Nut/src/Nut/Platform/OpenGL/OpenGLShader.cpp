@@ -3,58 +3,73 @@
 
 #include "glad/glad.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <fstream>
 
 
 namespace Nut {
+	static GLenum ShaderTypeFromString(const std::string& type) {
+		if (type == "vertex")
+			return GL_VERTEX_SHADER;
+		if (type == "fragment")
+			return GL_FRAGMENT_SHADER;
+
+		NT_CORE_ASSERT(false, "Unknown shader type!");
+		return 0;
+	}
+
+	OpenGLShader::OpenGLShader(const std::string& path)
+	{
+		std::string shaderSource = ReadShaderFile(path);
+		std::unordered_map<GLenum, std::string> processedShaderSourceMap = PreProcess(shaderSource);
+		Compile(processedShaderSourceMap);
+	}
+
 	OpenGLShader::OpenGLShader(const std::string& vertexSrc, const std::string FragmentSrc)
 	{
-		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-		const GLchar* source = (const GLchar*)vertexSrc.c_str();
-		glShaderSource(vertexShader, 1, &source, 0);
-		glCompileShader(vertexShader);
+		std::unordered_map<GLenum, std::string> processedShaderSourceMap;
+		processedShaderSourceMap[GL_VERTEX_SHADER] = vertexSrc;
+		processedShaderSourceMap[GL_FRAGMENT_SHADER] = FragmentSrc;
+		Compile(processedShaderSourceMap);
+	}
 
-		GLint isCompiled = 0;
-		glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == false) {
-			GLint maxLength = 0;
-			glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
+	OpenGLShader::~OpenGLShader()
+	{
+		glDeleteProgram(m_RendererID);
+	}
 
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(vertexShader, maxLength, &maxLength, &infoLog[0]);
-
-			glDeleteShader(vertexShader);
-
-			NT_CORE_ERROR("VertexShader compilation failure!");
-			NT_CORE_ERROR("{0}", infoLog.data());
-			NT_CORE_ASSERT(false, "ShaderConstruction failed, check log!");
-			return;
-		}
-
-		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		source = (const GLchar*)FragmentSrc.c_str();
-		glShaderSource(fragmentShader, 1, &source, 0);
-		glCompileShader(fragmentShader);
-
-		glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == false) {
-			GLint maxLength = 0;
-			glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
-
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &infoLog[0]);
-
-			glDeleteShader(fragmentShader);
-			glDeleteShader(vertexShader);
-
-			NT_CORE_ERROR("FragmentShader compilation failure!");
-			NT_CORE_ERROR("{0}", infoLog.data());
-			NT_CORE_ASSERT(false, "ShaderConstruction failed, check log!");
-			return;
-		}
-
+	void OpenGLShader::Compile(std::unordered_map<GLenum, std::string> shaderSources)
+	{
 		m_RendererID = glCreateProgram();
-		glAttachShader(m_RendererID, vertexShader);
-		glAttachShader(m_RendererID, fragmentShader);
+		std::vector<GLenum> glShaderIDs(shaderSources.size());
+		for (auto& kv : shaderSources) {
+			GLenum type = kv.first;
+			const std::string& source = kv.second;
+
+			GLuint shader = glCreateShader(type);
+			const GLchar* sourceCstr = (const GLchar*)source.c_str();
+			glShaderSource(shader, 1, &sourceCstr, 0);
+			glCompileShader(shader);
+
+			GLint isCompiled = 0;
+			glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
+			if (isCompiled == false) {
+				GLint maxLength = 0;
+				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+				std::vector<GLchar> infoLog(maxLength);
+				glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
+
+				glDeleteShader(shader);
+
+				NT_CORE_ERROR("Shader compilation failure!");
+				NT_CORE_ERROR("{0}", infoLog.data());
+				NT_CORE_ASSERT(false, "ShaderConstruction failed, check log!");
+				break;
+			}
+			glAttachShader(m_RendererID, shader);
+			glShaderIDs.push_back(shader);
+		}
+
 		glLinkProgram(m_RendererID);
 
 		GLint isLinked = 0;
@@ -67,22 +82,40 @@ namespace Nut {
 			glGetProgramInfoLog(m_RendererID, maxLength, &maxLength, &infoLog[0]);
 
 			glDeleteProgram(m_RendererID);
-			glDeleteShader(vertexShader);
-			glDeleteShader(fragmentShader);
+			
+			for (auto& shader : glShaderIDs)
+				glDeleteShader(shader);
 
 			NT_CORE_ERROR("ShaderProgram linking failure!");
 			NT_CORE_ERROR("{0}", infoLog.data());
 			NT_CORE_ASSERT(false, "ShaderConstruction failed, check log!");
 			return;
 		}
+		for (auto& shader : glShaderIDs)
+			glDetachShader(m_RendererID, shader);
 
-		glDetachShader(m_RendererID, vertexShader);
-		glDetachShader(m_RendererID, fragmentShader);
 	}
 
-	OpenGLShader::~OpenGLShader()
+	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
 	{
-		glDeleteProgram(m_RendererID);
+		std::unordered_map<GLenum, std::string> shaderSource;
+
+		const char* typeToken = "#type";
+		size_t typeTokenLengh = strlen(typeToken);
+		size_t pos = source.find(typeToken, 0);
+		while (pos != std::string::npos)
+		{
+			size_t eol = source.find_first_of("\r\n", pos);
+			NT_CORE_ASSERT(eol != std::string::npos, "Syntax error!");
+			size_t begin = pos + typeTokenLengh + 1;
+			std::string type = source.substr(begin, eol - begin);
+			NT_CORE_ASSERT(type == "vertex" || type == "fragment", "Invalid shader type");
+
+			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			pos = source.find(typeToken, nextLinePos);
+			shaderSource[ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
+		}
+		return shaderSource;
 	}
 
 	void OpenGLShader::Bind() const
@@ -166,6 +199,27 @@ namespace Nut {
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 		glUniform4i(location, values.x, values.y, values.z, values.w);
 	}
+
+	std::string OpenGLShader::ReadShaderFile(const std::string& path)
+	{
+		std::ifstream in(path, std::ios::in, std::ios::binary);
+		std::string result;
+
+		if (in) {
+			in.seekg(0, std::ios::end);
+			result.resize(in.tellg());
+			in.seekg(0, std::ios::beg);
+			in.read(&result[0], result.size());
+			in.close();
+		}
+		else {
+			NT_CORE_ERROR("Could not open file!");
+		}
+		return result;
+	}
+
+	
+
 
 
 }

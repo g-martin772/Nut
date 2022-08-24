@@ -8,6 +8,22 @@
 
 
 namespace Nut {
+	Shader* Shader::Create(const std::string& path)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::OpenGL:
+		{
+			return new OpenGLShader(path);
+		}
+		default:
+			NT_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+			break;
+		}
+		NT_CORE_ASSERT(false, "No API Selected!");
+		return nullptr;
+	}
+
 	Shader* Shader::Create(const std::string& vertexSrc, const std::string FragmentSrc)
 	{
 		switch(Renderer::GetAPI())
@@ -17,10 +33,10 @@ namespace Nut {
 			return new OpenGLShader(vertexSrc, FragmentSrc);
 		}
 		default:
-			NT_WARN("No API Selected!");
 			NT_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
 			break;
 		}
+		NT_CORE_ASSERT(false, "No API Selected!");
 		return nullptr;
 	}
 }
