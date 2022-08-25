@@ -2,7 +2,7 @@
 
 #include "ntpch.h"
 
-#include "Nut/Core.h"
+#include "Nut/Core/Core.h"
 #include "Nut/Events/Event.h"
 
 namespace Nut {

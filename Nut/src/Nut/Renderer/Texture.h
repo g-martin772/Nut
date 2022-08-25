@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <string>
-#include <Nut/Core.h>
+#include <Nut/Core/Core.h>
 
 namespace Nut {
 	class Texture {

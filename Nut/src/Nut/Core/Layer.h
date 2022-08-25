@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ntpch.h"
-#include "Nut/Core.h"
+#include "Nut/Core/Core.h"
 #include "Nut/Events/Event.h"
 #include "Nut/Core/Timestep.h"
 

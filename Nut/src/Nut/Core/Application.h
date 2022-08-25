@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Nut/ImGui/ImGuiLayer.h"
-#include "Nut/Core.h"
-#include "Nut/Window.h"
+#include "Nut/Core/Core.h"
+#include "Nut/Core/Window.h"
 #include "Nut/Events/AppEvent.h"
-#include "Nut/LayerStack.h"
+#include "Nut/Core/LayerStack.h"
 #include "Nut/Renderer/Shader.h"
 #include "Nut/Renderer/Buffer.h"
 #include "Nut/Renderer/VertexArray.h"
@@ -30,7 +30,9 @@ namespace Nut {
 	private:
 		Scope<Window> m_Window;
 		bool m_Running = true;
+		bool m_Minimized = false;
 		bool WindoClose(WindowCloseEvent& e);
+		bool WindoResize(WindowResizeEvent& e);
 		LayerStack m_LayerStack;
 		static Application* s_Instance;
 		float m_LastFrameTime = 0.0f;

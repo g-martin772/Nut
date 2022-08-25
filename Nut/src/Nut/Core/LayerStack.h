@@ -1,8 +1,8 @@
 #pragma once
 
 #include "ntpch.h"
-#include "Nut/Core.h"
-#include "Nut/Layer.h"
+#include "Nut/Core/Core.h"
+#include "Nut/Core/Layer.h"
 #include <vector>
 
 namespace Nut {

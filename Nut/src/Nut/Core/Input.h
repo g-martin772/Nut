@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core.h"
+#include "Nut/Core/Core.h"
 
 namespace Nut {
 	class NUT_API Input {

@@ -1,7 +1,7 @@
 #include "ntpch.h"
 #include "ImGuiLayer.h"
 #include "../vendor/GLFW/include/GLFW/glfw3native.h"
-#include "Nut/Application.h"
+#include "Nut/Core/Application.h"
 
 #define IMGUI_IMPL_API __declspec(dllexport)
 #include "imgui_impl_opengl3.h"

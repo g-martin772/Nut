@@ -3,6 +3,7 @@
 #include "Nut/Renderer/RenderCommand.h"
 #include <Nut/Renderer/OrthographicCamera.h>
 #include <Nut/Renderer/Shader.h>
+#include <Nut/Events/AppEvent.h>
 
 namespace Nut {
 	class Renderer {
@@ -11,6 +12,7 @@ namespace Nut {
 		~Renderer();
 
 		static void Init();
+		static void OnWindowResize(WindowResizeEvent& e);
 
 		static void BeginScene(OrthographicCamera& camera);
 		static void EndScene();

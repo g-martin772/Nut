@@ -4,7 +4,7 @@
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "../../Window.h"
+#include "Nut/Core/Window.h"
 #include "Nut/Renderer/GraphicsContext.h"
 
 namespace Nut {

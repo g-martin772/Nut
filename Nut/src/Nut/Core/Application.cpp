@@ -1,11 +1,11 @@
 #include "ntpch.h"
 #include "Application.h"
 
-#include "Events/AppEvent.h"
+#include "Nut/Events/AppEvent.h"
 #include "Log.h"
 #include "Input.h"
 #include "glm/glm.hpp"
-#include "Nut/LayerStack.h"
+#include "Nut/Core/LayerStack.h"
 #include "Nut/Renderer/Renderer.h"
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
@@ -44,6 +44,7 @@ namespace Nut {
 	void Application::OnEvent(Event& e) {
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::WindoClose));
+		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::WindoResize));
 		#if EVENTLOGGER
 		NT_CORE_TRACE("{0}", e);
 		#endif
@@ -60,14 +61,27 @@ namespace Nut {
 		return true;
 	}
 
+	bool Application::WindoResize(WindowResizeEvent& e) {
+		if (e.GetWidth() == 0 || e.GetHeight() == 0) {
+			m_Minimized = true;
+			return false;
+		}
+
+		m_Minimized = false;
+		Renderer::OnWindowResize(e);
+
+		return false;
+	}
+
 	void Application::Run() {
 		while (m_Running) {
 			float time = (float)glfwGetTime(); // TODO Move this to platform to remove dependency
 			Timestep timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
-			for (Layer* layer : m_LayerStack)
-				layer->OnUpdate(timestep);
+			if(!m_Minimized)
+				for (Layer* layer : m_LayerStack)
+					layer->OnUpdate(timestep);
 
 			m_ImGuiLayer->Begin();
 			for (Layer* layer : m_LayerStack) {

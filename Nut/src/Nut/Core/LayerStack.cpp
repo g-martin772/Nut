@@ -1,5 +1,5 @@
 #include "ntpch.h"
-#include "Nut/LayerStack.h"
+#include "LayerStack.h"
 
 namespace Nut {
 	LayerStack::~LayerStack() {

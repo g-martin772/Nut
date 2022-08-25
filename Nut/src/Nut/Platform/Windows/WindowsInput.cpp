@@ -1,7 +1,7 @@
 #include "ntpch.h"
 #include "WindowsInput.h"
 #include "../vendor/GLFW/include/GLFW/glfw3.h"
-#include "Nut/Application.h"
+#include "Nut/Core/Application.h"
 
 namespace Nut {
 	Input* Input::s_Instance = new WindowsInput();

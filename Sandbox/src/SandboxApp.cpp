@@ -5,7 +5,7 @@
 class ExampleLayer : public Nut::Layer {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f), m_CameraPosition(0.0f) {
+		: Layer("Example"), m_CameraController(1280.0f / 720.0f, true){
 		m_VertexArray.reset(Nut::VertexArray::Create());
 
 		float vertices[] = {
@@ -69,36 +69,17 @@ public:
 	void OnUpdate(Nut::Timestep ts) override {
 		//NT_TRACE("Deltatime: {0}s ({1})", ts.GetSeconds(), ts.GetMilliseconds());
 
-		if (Nut::Input::IsKeyPressed(NT_KEY_LEFT)) {
-			m_CameraPosition.x -= m_CameraMovementSpeed * ts;
-		}
-		else if (Nut::Input::IsKeyPressed(NT_KEY_RIGHT)) {
-			m_CameraPosition.x += m_CameraMovementSpeed * ts;
-		}
-		if (Nut::Input::IsKeyPressed(NT_KEY_UP)) {
-			m_CameraPosition.y += m_CameraMovementSpeed * ts;
-		}
-		else if (Nut::Input::IsKeyPressed(NT_KEY_DOWN)) {
-			m_CameraPosition.y -= m_CameraMovementSpeed * ts;
-		}
-
-		if (Nut::Input::IsKeyPressed(NT_KEY_A)) {
-			m_CameraRotation -= m_CameraRotationSpeed * ts;
-		}
-		else if (Nut::Input::IsKeyPressed(NT_KEY_D)) {
-			m_CameraRotation += m_CameraRotationSpeed * ts;
-		}
+		m_CameraController.OnUpdate(ts);
 
 		Nut::RenderCommand::SetClearColor({ 0.3, 0.1, 0.5, 1.0 });
 		Nut::RenderCommand::Clear();
 
-		m_Camera.SetPosition(m_CameraPosition);
-		m_Camera.SetRotation(m_CameraRotation);
+		
 
 		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader.Get("Flat"))->Bind();
 		std::dynamic_pointer_cast<Nut::OpenGLShader>(m_Shader.Get("Flat"))->UploadUniformFloat3("u_Color", m_Color);
 
-		Nut::Renderer::BeginScene(m_Camera);
+		Nut::Renderer::BeginScene(m_CameraController.GetCamera());
 
 		for (int y = 0; y < 20; y++)
 		{
@@ -120,7 +101,10 @@ public:
 		Nut::Renderer::EndScene();
 	}
 
-	void OnEvent(Nut::Event& e) override { return; }
+	void OnEvent(Nut::Event& e) override {
+		m_CameraController.OnEvent(e);
+	}
+
 	void OnAttach() override { return; }
 	void OnDetach() override { return; }
 
@@ -139,13 +123,7 @@ private:
 	Nut::Ref<Nut::Texture2D> m_Texture;
 	Nut::Ref<Nut::Texture2D> m_Texture2;
 
-	Nut::OrthographicCamera m_Camera;
-	glm::vec3 m_CameraPosition;
-
-	float m_CameraMovementSpeed = 1.0f;
-
-	float m_CameraRotation = 0.0f;
-	float m_CameraRotationSpeed = 5.0f;
+	Nut::OrthographicCameraController m_CameraController;
 
 	glm::vec3 m_Color;
 };

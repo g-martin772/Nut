@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../src/Nut/Log.h"
+#include "Nut/Core/Log.h"
 
 #include <iostream>
 #include <memory>

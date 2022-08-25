@@ -11,6 +11,11 @@ namespace Nut{
 		RenderCommand::Init();
 	}
 
+	void Renderer::OnWindowResize(WindowResizeEvent& e)
+	{
+		RenderCommand::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
+	}
+
 	void Renderer::BeginScene(OrthographicCamera& camera)
 	{
 		m_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();

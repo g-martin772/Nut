@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Core.h"
+#include "Nut/Core/Core.h"
 
 namespace Nut {
 	enum class EventType {
