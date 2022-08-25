@@ -1,5 +1,7 @@
 #pragma once
 
+//Inspired by TheCherno's Hazel Engine
+
 #include "ntpch.h"
 #include "Nut/Core/Core.h"
 #include "Nut/Core/Log.h"
@@ -23,5 +25,3 @@
 #include "../vendor/imgui/imgui_internal.h"
 #include "../vendor/imgui/imgui.h"
 #include "../vendor/glm/glm/glm.hpp"
-
-#include "Nut/Core/Entrypoint.h"
