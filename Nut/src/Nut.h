@@ -17,6 +17,7 @@
 #include "Nut/Renderer/OrthographicCamera.h"
 #include "Nut/Renderer/RenderCommand.h"
 #include "Nut/Renderer/Renderer.h"
+#include "Nut/Renderer/Renderer2D.h"
 #include "Nut/Renderer/Shader.h"
 #include "Nut/Core/Timestep.h"
 #include "Nut/Renderer/Texture.h"

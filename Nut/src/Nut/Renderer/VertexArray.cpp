@@ -4,11 +4,13 @@
 #include "Renderer.h"
 #include "Nut/Platform/OpenGL/OpenGLVertexArray.h"
 
-Nut::VertexArray* Nut::VertexArray::Create()
-{
-	switch (Renderer::GetAPI()) {
-	case RendererAPI::API::OpenGL:	return new OpenGLVertexArray();
+namespace Nut {
+	Ref<VertexArray> VertexArray::Create()
+	{
+		switch (Renderer::GetAPI()) {
+		case RendererAPI::API::OpenGL:	return  std::make_shared<OpenGLVertexArray>();
+		}
+		NT_CORE_ASSERT(false, "RendererAPI::selected is currently not supported!")
+			return nullptr;
 	}
-	NT_CORE_ASSERT(false, "RendererAPI::selected is currently not supported!")
-	return nullptr;
 }

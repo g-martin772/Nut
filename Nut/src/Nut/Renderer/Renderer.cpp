@@ -2,6 +2,7 @@
 #include "Renderer.h"
 
 #include <Nut/Platform/OpenGL/OpenGLShader.h>
+#include <Nut/Renderer/Renderer2D.h>
 
 namespace Nut{
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData();
@@ -9,6 +10,7 @@ namespace Nut{
 	void Renderer::Init()
 	{
 		RenderCommand::Init();
+		Renderer2D::Init();
 	}
 
 	void Renderer::OnWindowResize(WindowResizeEvent& e)

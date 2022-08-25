@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 #include <string>
-#include <../vendor/glm/glm/glm.hpp>
 #include <Nut/Renderer/Shader.h>
 
 typedef unsigned int GLenum;
@@ -17,6 +16,11 @@ namespace Nut {
 
 		void Bind() const override;
 		void UnBind() const override;
+
+		void SetInt(const std::string& name, int value) override;
+		void SetFloat3(const std::string& name, const glm::vec3& value) override;
+		void SetFloat4(const std::string& name, const glm::vec4& value) override;
+		void SetMat4(const std::string& name, const glm::mat4& value) override;
 
 		void UploadUniformMat3(const std::string& name, const glm::mat3& matrix);
 		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix);

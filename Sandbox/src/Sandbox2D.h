@@ -15,12 +15,9 @@ namespace Sandbox {
 		void OnImGuiRender() override;
 	private:
 		Nut::ShaderLibrary m_Shader;
-		Nut::Ref<Nut::VertexBuffer> m_VertexBuffer;
-		Nut::Ref<Nut::IndexBuffer> m_IndexBuffer;
-		Nut::Ref<Nut::VertexArray> m_VertexArray;
-		Nut::Ref<Nut::Texture2D> m_Texture;
-		Nut::Ref<Nut::Texture2D> m_Texture2;
 		Nut::OrthographicCameraController m_CameraController;
+
+		Nut::Ref<Nut::Texture2D> m_CheckerboardTexture;
 
 		glm::vec4 m_Color = {1.0f, 1.0f, 1.0f, 1.0f};
 	};

@@ -1,9 +1,6 @@
 #include <Nut.h>
 #include <Nut/Core/Entrypoint.h>
 
-#include "../../Nut/vendor/glm/glm/gtc/type_ptr.hpp"
-#include <Nut/Platform/OpenGL/OpenGLShader.h>
-
 #include "Sandbox2D.h"
 
 class ExampleLayer : public Nut::Layer {
