@@ -22,9 +22,9 @@ namespace Nut {
 			s_RendererAPI->Clear();
 		}
 
-		inline static void DrawIndexed(const Ref<VertexArray> vertexArray) {
+		inline static void DrawIndexed(const Ref<VertexArray> vertexArray, uint32_t indexCount = 0) {
 			NT_PROFILE_FUNCTION();
-			s_RendererAPI->DrawIndexed(vertexArray);
+			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
 		}
 	private:
 		static RendererAPI* s_RendererAPI;

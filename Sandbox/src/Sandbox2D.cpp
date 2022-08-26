@@ -28,8 +28,10 @@ namespace Sandbox {
 			NT_PROFILE_SCOPE("Sandbox::OnUpdate -> Renderer.Draw");
 			Nut::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-			Nut::Renderer2D::DrawQuad({ -1.0f, 0.0f }, { 0.8f, 0.3f }, m_Color);
-			Nut::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 10.0f, 10.0f }, glm::radians(45.0f), m_CheckerboardTexture, m_Color, 10);
+			Nut::Renderer2D::DrawQuad({ -1.0f, 0.0f, 0.0f }, { 0.8f, 0.3f }, 0, m_Color);
+			Nut::Renderer2D::DrawQuad({ -0.8f, 3.0f, 0.0f }, { 0.3f, 1.3f }, 20, m_Color);
+			Nut::Renderer2D::DrawQuad({  0.5f, 1.5f, 0.0f }, { 0.8f, 1.3f }, m_Color);
+			Nut::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 10.0f, 10.0f }, 45, m_CheckerboardTexture, m_Color, 10);
 
 			Nut::Renderer2D::EndScene(); 
 		}

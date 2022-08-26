@@ -151,6 +151,11 @@ namespace Nut {
 		UploadUniformFloat(name, value);
 	}
 
+	void OpenGLShader::SetIntArr(const std::string& name, int* values, uint32_t count)
+	{
+		UploadUniformIntArr(name, values, count);
+	}
+
 	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
 		UploadUniformFloat3(name, value);
@@ -212,6 +217,12 @@ namespace Nut {
 	{
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 		glUniform1i(location, value);
+	}
+
+	void OpenGLShader::UploadUniformIntArr(const std::string& name, int* values, uint32_t count)
+	{
+		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+		glUniform1iv(location, count, values);
 	}
 
 	void OpenGLShader::UploadUniformInt1(const std::string& name, const glm::vec1& values)

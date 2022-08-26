@@ -18,6 +18,7 @@ namespace Nut {
 		void UnBind() const override;
 
 		void SetInt(const std::string& name, int value) override;
+		void SetIntArr(const std::string& name, int* values, uint32_t count) override;
 		void SetFloat(const std::string& name, float value) override;
 		void SetFloat3(const std::string& name, const glm::vec3& value) override;
 		void SetFloat4(const std::string& name, const glm::vec4& value) override;
@@ -33,6 +34,7 @@ namespace Nut {
 		void UploadUniformFloat4(const std::string& name, const glm::vec4& values);
 
 		void UploadUniformInt(const std::string& name, int value);
+		void UploadUniformIntArr(const std::string& name, int* values, uint32_t count);
 		void UploadUniformInt1(const std::string& name, const glm::vec1& values);
 		void UploadUniformInt2(const std::string& name, const glm::vec2& values);
 		void UploadUniformInt3(const std::string& name, const glm::vec3& values);
