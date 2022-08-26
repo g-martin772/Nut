@@ -6,6 +6,7 @@ namespace Nut {
 	class RenderCommand {
 	public:
 		inline static void Init() {
+			NT_PROFILE_FUNCTION();
 			s_RendererAPI->Init();
 		}
 
@@ -22,6 +23,7 @@ namespace Nut {
 		}
 
 		inline static void DrawIndexed(const Ref<VertexArray> vertexArray) {
+			NT_PROFILE_FUNCTION();
 			s_RendererAPI->DrawIndexed(vertexArray);
 		}
 	private:

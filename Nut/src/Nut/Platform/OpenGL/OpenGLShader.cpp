@@ -19,6 +19,7 @@ namespace Nut {
 
 	OpenGLShader::OpenGLShader(const std::string& path)
 	{
+		NT_PROFILE_FUNCTION();
 		std::string shaderSource = ReadShaderFile(path);
 		std::unordered_map<GLenum, std::string> processedShaderSourceMap = PreProcess(shaderSource);
 		Compile(processedShaderSourceMap);
@@ -32,6 +33,7 @@ namespace Nut {
 
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string FragmentSrc) : m_Name(name)
 	{
+		NT_PROFILE_FUNCTION();
 		std::unordered_map<GLenum, std::string> processedShaderSourceMap;
 		processedShaderSourceMap[GL_VERTEX_SHADER] = vertexSrc;
 		processedShaderSourceMap[GL_FRAGMENT_SHADER] = FragmentSrc;
@@ -40,11 +42,14 @@ namespace Nut {
 
 	OpenGLShader::~OpenGLShader()
 	{
+		NT_PROFILE_FUNCTION();
 		glDeleteProgram(m_RendererID);
 	}
 
 	void OpenGLShader::Compile(std::unordered_map<GLenum, std::string> shaderSources)
 	{
+		NT_PROFILE_FUNCTION();
+
 		m_RendererID = glCreateProgram();
 		std::vector<GLenum> glShaderIDs;
 		for (auto& kv : shaderSources) {
@@ -104,6 +109,7 @@ namespace Nut {
 
 	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
 	{
+		NT_PROFILE_FUNCTION();
 		std::unordered_map<GLenum, std::string> shaderSource;
 
 		const char* typeToken = "#type";
@@ -126,6 +132,7 @@ namespace Nut {
 
 	void OpenGLShader::Bind() const
 	{
+		NT_PROFILE_FUNCTION();
 		glUseProgram(m_RendererID);
 	}
 
@@ -137,6 +144,11 @@ namespace Nut {
 	void OpenGLShader::SetInt(const std::string& name, int value)
 	{
 		UploadUniformInt(name, value);
+	}
+
+	void OpenGLShader::SetFloat(const std::string& name, float value)
+	{
+		UploadUniformFloat(name, value);
 	}
 
 	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)

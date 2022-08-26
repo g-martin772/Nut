@@ -12,6 +12,8 @@ namespace Nut {
 
     void OrthographicCameraController::OnUpdate(Timestep ts)
     {
+        NT_PROFILE_FUNCTION();
+
         if (Input::IsKeyPressed(NT_KEY_LEFT)) {
             m_CameraPosition.x -= m_CameraMovementSpeed * ts;
         }
@@ -47,6 +49,7 @@ namespace Nut {
 
     bool OrthographicCameraController::OnMouseScrolledEvent(MouseScrolledEvent& e)
     {
+        NT_PROFILE_FUNCTION();
         m_ZoomLevel -= e.GetYOffset();
         m_Camera.SetProjection(-m_AspecrRatio * m_ZoomLevel, m_AspecrRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
         return false;
@@ -54,6 +57,7 @@ namespace Nut {
 
     bool OrthographicCameraController::OnWindowResizeEvent(WindowResizeEvent& e)
     {
+        NT_PROFILE_FUNCTION();
         m_AspecrRatio = (float)e.GetWidth() / (float)e.GetHeight();
         m_Camera.SetProjection(-m_AspecrRatio * m_ZoomLevel, m_AspecrRatio, -m_ZoomLevel, m_ZoomLevel);
         return false;

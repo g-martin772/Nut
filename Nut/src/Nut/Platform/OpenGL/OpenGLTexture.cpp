@@ -57,6 +57,7 @@ namespace Nut {
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
+		NT_PROFILE_FUNCTION();
 		glBindTextureUnit(slot, m_RendererID);
 	}
 }

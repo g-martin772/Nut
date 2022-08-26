@@ -9,6 +9,8 @@ namespace Nut{
 
 	void Renderer::Init()
 	{
+		NT_PROFILE_FUNCTION();
+
 		RenderCommand::Init();
 		Renderer2D::Init();
 	}
@@ -27,6 +29,7 @@ namespace Nut{
 	}
 	void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform)
 	{
+		NT_PROFILE_FUNCTION();
 		shader->Bind();
 		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_VPM", m_SceneData->ViewProjectionMatrix);
 		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_MLM", transform);

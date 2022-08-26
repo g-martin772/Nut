@@ -18,6 +18,7 @@ namespace Nut {
 
 	void Renderer2D::Init()
 	{
+		NT_PROFILE_FUNCTION();
 		s_Data = new Renderer2DStorage;
 
 		s_Data->TextureShader2D = Shader::Create("assets/shaders/Texture.glsl");
@@ -69,12 +70,15 @@ namespace Nut {
 
 	void Renderer2D::DrawQuad(const glm::vec2& pos, const glm::vec2& size, const glm::vec4& color)
 	{
+		NT_PROFILE_FUNCTION();
 		DrawQuad({ pos.x, pos.y, 0.0f }, size, color);
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color)
 	{
+		NT_PROFILE_FUNCTION();
 		s_Data->TextureShader2D->SetFloat4("u_Color", color);
+		s_Data->TextureShader2D->SetFloat("u_TileFactor", 1);
 		s_Data->WhitePixelx1Texture->Bind();
 
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)  *  glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
@@ -84,15 +88,18 @@ namespace Nut {
 		RenderCommand::DrawIndexed(s_Data->VertexArray);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& pos, const glm::vec2& size, const Ref<Texture2D>& texture)
+	void Renderer2D::DrawQuad(const glm::vec2& pos, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tint, float tilingFactor)
 	{
-		DrawQuad({ pos.x, pos.y, 0.0f }, size, texture);
+		NT_PROFILE_FUNCTION();
+		DrawQuad({ pos.x, pos.y, 0.0f }, size, texture, tint, tilingFactor);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& pos, const glm::vec2& size, const Ref<Texture2D>& texture)
+	void Renderer2D::DrawQuad(const glm::vec3& pos, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tint, float tilingFactor)
 	{
-		s_Data->TextureShader2D->SetFloat4("u_Color", glm::vec4(1.0f));
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+		NT_PROFILE_FUNCTION();
+		s_Data->TextureShader2D->SetFloat4("u_Color", tint);
+		s_Data->TextureShader2D->SetFloat("u_TileFactor", tilingFactor);
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)  *  glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 		s_Data->TextureShader2D->SetMat4("u_MLM", transform);
 
 		texture->Bind();
@@ -100,15 +107,38 @@ namespace Nut {
 		RenderCommand::DrawIndexed(s_Data->VertexArray);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& pos, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tint)
+	void Renderer2D::DrawQuad(const glm::vec2& pos, const glm::vec2& size, float rotation, const glm::vec4& color)
 	{
-		DrawQuad({ pos.x, pos.y, 0.0f }, size, texture, tint);
+		NT_PROFILE_FUNCTION();
+		DrawQuad({ pos.x, pos.y, 0.0f }, size, rotation, color);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& pos, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tint)
+	void Renderer2D::DrawQuad(const glm::vec3& pos, const glm::vec2& size, float rotation, const glm::vec4& color)
 	{
+		NT_PROFILE_FUNCTION();
+		s_Data->TextureShader2D->SetFloat4("u_Color", color);
+		s_Data->TextureShader2D->SetFloat("u_TileFactor", 1);
+		s_Data->WhitePixelx1Texture->Bind();
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)  *  glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f })  *  glm::rotate(glm::mat4(1.0f), rotation, { 0.0f, 0.0f, 1.0f });
+		s_Data->TextureShader2D->SetMat4("u_MLM", transform);
+
+		s_Data->VertexArray->Bind();
+		RenderCommand::DrawIndexed(s_Data->VertexArray);
+	}
+
+	void Renderer2D::DrawQuad(const glm::vec2& pos, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tint, float tilingFactor)
+	{
+		NT_PROFILE_FUNCTION();
+		DrawQuad({ pos.x, pos.y, 0.0f }, size, rotation, texture, tint, tilingFactor);
+	}
+
+	void Renderer2D::DrawQuad(const glm::vec3& pos, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tint, float tilingFactor)
+	{
+		NT_PROFILE_FUNCTION();
 		s_Data->TextureShader2D->SetFloat4("u_Color", tint);
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+		s_Data->TextureShader2D->SetFloat("u_TileFactor", tilingFactor);
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)  *  glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f })  *  glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 0.0f, 1.0f});
 		s_Data->TextureShader2D->SetMat4("u_MLM", transform);
 
 		texture->Bind();

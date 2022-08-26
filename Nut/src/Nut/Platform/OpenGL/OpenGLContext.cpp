@@ -10,6 +10,8 @@ namespace Nut {
 
 	void OpenGLContext::Init()
 	{
+		NT_PROFILE_FUNCTION();
+
 		glfwMakeContextCurrent(m_WindowHandel);
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		NT_CORE_ASSERT(status, "Failed to initialize GLAD");
@@ -22,6 +24,7 @@ namespace Nut {
 	}
 	void OpenGLContext::SwapBuffers()
 	{
+		NT_PROFILE_FUNCTION();
 		glfwSwapBuffers(m_WindowHandel);
 	}
 }

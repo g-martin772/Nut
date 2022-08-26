@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Nut/Core/Log.h"
+#include "Profiler.h"
 
 #include <iostream>
 #include <memory>
