@@ -39,9 +39,10 @@ namespace Nut {
 			return GetCategoryFlags() & category;
 		}
 
+		inline void Handled(bool handled) { m_Handled = handled; }
 		inline bool Handled() { return m_Handled; }
 
-	protected:
+	public:
 		bool m_Handled = false;
 	};
 

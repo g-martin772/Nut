@@ -14,12 +14,16 @@
 namespace Nut {
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application() {
+	Application::Application(const char* name, uint32_t width, uint32_t height) {
 		NT_PROFILE_FUNCTION();
 
 		NT_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
-		m_Window = Scope<Window>(Window::Create());
+		WindowProps windowProperties;
+		windowProperties.Title = name;
+		windowProperties.Width = width;
+		windowProperties.Height = height;
+		m_Window = Scope<Window>(Window::Create(windowProperties));
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(false);
 
@@ -115,5 +119,9 @@ namespace Nut {
 				m_Window->OnUpdate();
 			}
 		}
+	}
+	void Application::Close()
+	{
+		m_Running = false;
 	}
 }

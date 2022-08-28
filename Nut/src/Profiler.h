@@ -107,7 +107,7 @@ namespace Nut {
 	};
 }
 
-#define NT_PROFILE 1
+#define NT_PROFILE 0
 #if NT_PROFILE
 #define NT_PROFILE_BEGIN_SESSION(name, filepath)	::Nut::Instrumentor::Get().BeginSession(name, filepath)
 #define NT_PROFILE_END_SESSION()					::Nut::Instrumentor::Get().EndSession()

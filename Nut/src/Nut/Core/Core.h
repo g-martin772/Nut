@@ -14,6 +14,8 @@
 	#else
 		#define NUT_API
 	#endif
+	
+	#define NT_OPENGL
 #else
 	#error Nuts for Windows
 #endif

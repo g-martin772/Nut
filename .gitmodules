@@ -10,3 +10,9 @@
 [submodule "Nut/vendor/glm"]
 	path = Nut/vendor/glm
 	url = https://github.com/g-truc/glm
+[submodule "Nut/vendor/UUIDv4"]
+	path = Nut/vendor/UUIDv4
+	url = https://github.com/crashoz/uuid_v4
+[submodule "Nut/vendor/ImGuizmo"]
+	path = Nut/vendor/ImGuizmo
+	url = https://github.com/TheCherno/ImGuizmo

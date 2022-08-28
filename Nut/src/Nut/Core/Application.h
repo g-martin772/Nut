@@ -8,22 +8,25 @@
 #include "Nut/Renderer/Shader.h"
 #include "Nut/Renderer/Buffer.h"
 #include "Nut/Renderer/VertexArray.h"
-#include "Nut/Renderer/OrthographicCamera.h"
+#include "Nut/Camera/OrthographicCamera.h"
 #include "Nut/Core/Timestep.h"
 
 namespace Nut {
 	class NUT_API Application
 	{
 	public:
-		Application();
+		Application(const char* name = "Nut Engine", uint32_t width = 1280, uint32_t height = 720);
 		virtual ~Application();
 
 		void Run();
+		void Close();
 
 		void OnEvent(Event& e);
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
+
+		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }

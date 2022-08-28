@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Nut/Core/Core.h"
 #include "Nut/Core/Log.h"
+#include "Nut/Core/KeyCodes.h"
 #include "Profiler.h"
 
 #include <iostream>

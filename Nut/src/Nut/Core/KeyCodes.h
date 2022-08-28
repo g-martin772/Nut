@@ -1,8 +1,8 @@
 #pragma once
+#include "Nut/Core/Core.h"
 
-
-//#ifdef NT_PLATFORM_WINDOWS
-//#ifdef NT_OPENGL
+#ifdef NT_PLATFORM_WINDOWS
+#ifdef NT_OPENGL
 
 	#define UNI_KEY_UNKNOWN            -1
 	#define UNI_KEY_SPACE              32
@@ -129,8 +129,8 @@
 	#define UNI_KEY_MENU               348
 	#define UNI_KEY_LAST               NT_KEY_MENU
 
-//#endif NT_OPENGL
-//#endif NT_PLATFORM_WINDOWS
+#endif NT_OPENGL
+#endif NT_PLATFORM_WINDOWS
 
 
 #define NT_KEY_UNKNOWN            UNI_KEY_UNKNOWN       

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Nut/Renderer/RenderCommand.h"
-#include <Nut/Renderer/OrthographicCamera.h>
+#include <Nut/Camera/OrthographicCamera.h>
 #include <Nut/Renderer/Shader.h>
 #include <Nut/Events/AppEvent.h>
 
