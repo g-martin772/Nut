@@ -1,7 +1,7 @@
 #include "ntpch.h"
 #include "OpenGLFramebuffer.h"
 
-#include "../vendor/GLAD/include/glad/glad.h"
+#include "glad/glad.h"
 
 namespace Nut {
 	namespace Utils {

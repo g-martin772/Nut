@@ -1,7 +1,7 @@
 #include "ntpch.h"
 #include "OpenGLTexture.h"
 
-#include <../vendor/GLAD/include/glad/glad.h>
+#include <glad/glad.h>
 #include "stb_image.h"
 
 namespace Nut {

@@ -1,7 +1,7 @@
 #include "ntpch.h"
 #include "SceneCamera.h"
 
-#include "../vendor/glm/glm/gtc/matrix_transform.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Nut {
 	SceneCamera::SceneCamera()

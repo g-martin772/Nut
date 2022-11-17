@@ -1,8 +1,10 @@
 #pragma once
+
+#include "Nut/Core/Core.h"
+
 #include <cstdint>
 #include <string>
-#include <Nut/Core/Core.h>
-#include "../vendor/glm/glm/glm.hpp"
+#include <glm/glm.hpp>
 
 namespace Nut {
 	class Texture {

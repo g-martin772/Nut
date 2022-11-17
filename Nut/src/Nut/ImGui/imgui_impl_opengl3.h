@@ -22,7 +22,7 @@
 
 #pragma once
 #include "ntpch.h"
-#include "../vendor/imgui/imgui.h"      // IMGUI_IMPL_API
+#include "imgui.h"     // IMGUI_IMPL_API
 
 // Backend API
 IMGUI_IMPL_API bool     ImGui_ImplOpenGL3_Init(const char* glsl_version = NULL);

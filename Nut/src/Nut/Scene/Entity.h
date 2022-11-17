@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Nut/Scene/Scene.h"
-#include "../vendor/UUIDv4/endianness.h"
-#include "../vendor/UUIDv4/uuid_v4.h"
 
 namespace Nut {
 	class Scene;

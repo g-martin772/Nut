@@ -1,10 +1,10 @@
  #pragma once
 
 #include "Nut/Core/Layer.h"
-#include "../vendor/imgui/imgui.h"
-#include "../vendor/imgui/imgui_internal.h"
+#include "imgui.h"
+#include "imgui_internal.h"
 #include "Nut/ImGui/imgui_impl_opengl3.h"
-#include "../vendor/GLFW/include/GLFW/glfw3.h"
+#include "GLFW/glfw3.h"
 
 
 

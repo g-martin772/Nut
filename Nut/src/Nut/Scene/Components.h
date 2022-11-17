@@ -1,14 +1,13 @@
 #pragma once
 
-#include "../vendor/enTT/entt.hpp"
-#include "../vendor/glm/glm/glm.hpp"
-#include "../vendor/glm/glm/gtc/matrix_transform.hpp"
+#include <enTT/entt.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include "../vendor/glm/glm/gtx/quaternion.hpp"
+#include <glm/gtx/quaternion.hpp>
 
 #include <functional>
-
 
 #include "Nut/Scene/SceneCamera.h"
 #include "Nut/Scene/ScriptableEntity.h"

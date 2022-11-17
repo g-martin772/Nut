@@ -1,6 +1,6 @@
 #include "ntpch.h"
 #include "Nut/Core/Input.h"
-#include "../vendor/GLFW/include/GLFW/glfw3.h"
+#include "GLFW/glfw3.h"
 #include "Nut/Core/Application.h"
 
 namespace Nut {

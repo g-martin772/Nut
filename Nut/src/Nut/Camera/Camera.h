@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../vendor/glm/glm/glm.hpp"
+#include <glm/glm.hpp>
 
 namespace Nut {
 	class Camera {

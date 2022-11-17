@@ -1,11 +1,10 @@
 #include "ntpch.h"
 #include "Scene.h"
 
-#include "../vendor/glm/glm/glm.hpp"
-#include "Nut/Renderer/Renderer2D.h"
+#include <glm/glm.hpp>
 
-#include "Components.h"
-#include "ScriptableEntity.h"
+#include "Nut/Renderer/Renderer2D.h"
+#include "Nut/Scene/ScriptableEntity.h"
 #include "Nut/Scene/Components.h"
 
 namespace Nut {

@@ -29,20 +29,20 @@
 #include "Nut/Scene/SceneSerializer.h"
 #include "Nut/Utils/PlatformUtils.h"
 
-#include "../vendor/imgui/imgui_internal.h"
-#include "../vendor/imgui/imgui.h"
+#include "imgui_internal.h"
+#include "imgui.h"
 
-#include "../vendor/glm/glm/glm.hpp"
-#include "../vendor/glm/glm/gtc/type_ptr.hpp"
-#include "../vendor/glm/glm/gtc/matrix_transform.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-#include "../vendor/enTT/entt.hpp"
-#include "../vendor/UUIDv4/uuid_v4.h"
-#include "../vendor/UUIDv4/endianness.h"
-#include "../vendor/ImGuizmo/ImGuizmo.h"
+#include <enTT/entt.hpp>
+//#include <UUIDv4/uuid_v4.h>
+//#include <UUIDv4/endianness.h>
+#include <ImGuizmo.h>
 
-#include <../vendor/glm/glm/gtc/constants.hpp>
+#include <glm/gtc/constants.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <../vendor/glm/glm/gtx/compatibility.hpp>
+#include <glm/gtx/compatibility.hpp>
  
 #include "Nut/Math/Math.h"

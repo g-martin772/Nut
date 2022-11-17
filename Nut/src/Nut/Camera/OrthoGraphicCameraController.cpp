@@ -1,8 +1,8 @@
 #include "ntpch.h"
 #include "OrthoGraphicCameraController.h"
 
-#include <Nut/Core/KeyCodes.h>
-#include <Nut/Core/Input.h>
+#include "Nut/Core/KeyCodes.h"
+#include "Nut/Core/Input.h"
 
 namespace Nut {
     OrthographicCameraController::OrthographicCameraController(float aspectRatio, bool enableRotation) 

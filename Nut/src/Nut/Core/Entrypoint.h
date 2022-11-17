@@ -1,8 +1,7 @@
 #pragma once
 
-#include "ntpch.h"
-#include "Application.h"
-#include "Log.h"
+#include "Nut/Core/Application.h"
+#include "Nut/Core/Log.h"
 
 #ifdef NT_PLATFORM_WINDOWS
 

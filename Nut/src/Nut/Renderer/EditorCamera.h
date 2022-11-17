@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../vendor/glm/glm/glm.hpp"
-
 #include "Nut/Core/Timestep.h"
 #include "Nut/Events/Event.h"
 #include "Nut/Events/MouseEvent.h"
 #include "Nut/Camera/Camera.h"
+
+#include <glm/glm.hpp>
 
 namespace Nut {
 	class EditorCamera : public Camera

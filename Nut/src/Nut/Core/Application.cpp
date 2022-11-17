@@ -1,10 +1,11 @@
 #include "ntpch.h"
 #include "Application.h"
 
+#include <glm/glm.hpp>
+
+#include "Nut/Core/Input.h"
+#include "Nut/Core/Log.h"
 #include "Nut/Events/AppEvent.h"
-#include "Log.h"
-#include "Input.h"
-#include "glm/glm.hpp"
 #include "Nut/Core/LayerStack.h"
 #include "Nut/Renderer/Renderer.h"
 

@@ -1,10 +1,10 @@
 #include "ntpch.h"
 #include "EditorCamera.h"
 
-#include "../vendor/GLFW/include/GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include "../vendor/glm/glm/gtx/quaternion.hpp"
+#include <glm/gtx/quaternion.hpp>
 
 #include "Nut/Core/Input.h"
 #include "Nut/Core/KeyCodes.h"

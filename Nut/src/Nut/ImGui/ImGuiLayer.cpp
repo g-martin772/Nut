@@ -1,6 +1,6 @@
 #include "ntpch.h"
 #include "ImGuiLayer.h"
-#include "../vendor/GLFW/include/GLFW/glfw3native.h"
+#include "GLFW/glfw3native.h"
 #include "Nut/Core/Application.h"
 
 #include "Nut/Events/AppEvent.h"

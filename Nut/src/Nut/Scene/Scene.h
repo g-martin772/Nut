@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../vendor/enTT/entt.hpp"
+#include <enTT/entt.hpp>
 
 #include "Nut/Core/Timestep.h"
 #include "Nut/Renderer/EditorCamera.h"

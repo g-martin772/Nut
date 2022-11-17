@@ -1,7 +1,7 @@
 #include "ntpch.h"
 #include "SceneSerializer.h"
 
-#include "../vendor/yaml-cpp/include/yaml-cpp/yaml.h"
+#include "yaml-cpp/yaml.h"
 #include "Nut/Scene/Entity.h"
 #include <Nut/Scene/Components.h>
 

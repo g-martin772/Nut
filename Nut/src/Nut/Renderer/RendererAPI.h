@@ -2,7 +2,8 @@
 
 #include "Nut/Renderer/Buffer.h"
 #include "Nut/Renderer/VertexArray.h"
-#include "../vendor/GLM/glm/glm.hpp"
+
+#include <glm/glm.hpp>
 #include <memory>
 
 namespace Nut{
