@@ -1,6 +1,6 @@
 project "Nero"
     kind "ConsoleApp"
-    staticruntime "On"
+    staticruntime "off"
 
     language "C++"
     cppdialect "C++17"

@@ -9,3 +9,4 @@ scripts/__pycache__/
 *.vcxproj
 *.sln
 Nut/vendor/VulkanSDK/*.exe
+Nero/assets/cache/

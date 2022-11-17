@@ -41,6 +41,7 @@ namespace Nut {
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
+		NT_CORE_ASSERT(width > 0 && height > 0, "Invalid screen width");
 		m_AspectRatio = (float)width / (float)height;
 		m_Width = width;
 		m_Height = height;
