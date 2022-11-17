@@ -1,9 +1,11 @@
 ﻿.vs/
 int/
 bin/
+Nut/vendor/VulkanSDK/1.3.231.1/
+scripts/__pycache__/
 
 *.user
 *.filters
 *.vcxproj
 *.sln
-
+Nut/vendor/VulkanSDK/*.exe
