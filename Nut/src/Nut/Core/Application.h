@@ -12,10 +12,22 @@
 #include "Nut/Core/Timestep.h"
 
 namespace Nut {
+	struct ApplicationCommandLineArgs
+	{
+		int Count = 0;
+		char** Args = nullptr;
+
+		const char* operator[](int index) const
+		{
+			NT_CORE_ASSERT(index < Count, "Invalid command line args index");
+			return Args[index];
+		}
+	};
+
 	class NUT_API Application
 	{
 	public:
-		Application(const char* name = "Nut Engine", uint32_t width = 1280, uint32_t height = 720);
+		Application(const char* name = "Nut Engine", uint32_t width = 1280, uint32_t height = 720, ApplicationCommandLineArgs args = ApplicationCommandLineArgs());
 		virtual ~Application();
 
 		void Run();
@@ -30,8 +42,11 @@ namespace Nut {
 
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
+
+		ApplicationCommandLineArgs GetCommandLineArgs() const { return m_CommandLineArgs; }
 	private:
 		Scope<Window> m_Window;
+		ApplicationCommandLineArgs m_CommandLineArgs;
 		bool m_Running = true;
 		bool m_Minimized = false;
 		bool WindoClose(WindowCloseEvent& e);
@@ -45,6 +60,6 @@ namespace Nut {
 
 
 	//To be defined by client!
-	Application* CreateApplication();
+	Application* CreateApplication(ApplicationCommandLineArgs args);
 }
 

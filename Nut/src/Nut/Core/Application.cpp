@@ -15,7 +15,9 @@
 namespace Nut {
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const char* name, uint32_t width, uint32_t height) {
+	Application::Application(const char* name, uint32_t width, uint32_t height, ApplicationCommandLineArgs args) 
+		: m_CommandLineArgs(args)
+	{
 		NT_PROFILE_FUNCTION();
 
 		NT_CORE_ASSERT(!s_Instance, "Application already exists!");

@@ -5,13 +5,13 @@
 
 #ifdef NT_PLATFORM_WINDOWS
 
-extern Nut::Application* Nut::CreateApplication();
+extern Nut::Application* Nut::CreateApplication(ApplicationCommandLineArgs args);
 
 int main(int argc, char** argv) {
 	Nut::Log::Init();
 
 	NT_PROFILE_BEGIN_SESSION("Startup", "NutProfile-Startup.json");
-	auto app = Nut::CreateApplication();
+	auto app = Nut::CreateApplication({ argc, argv });
 	NT_PROFILE_END_SESSION();
 
 	NT_PROFILE_BEGIN_SESSION("Runtime", "NutProfile-Runtime.json");
@@ -24,5 +24,5 @@ int main(int argc, char** argv) {
 }
 
 #else
-	#error Nuts for Windows
+#error Nuts for Windows
 #endif
