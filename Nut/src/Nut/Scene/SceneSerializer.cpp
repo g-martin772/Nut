@@ -134,6 +134,7 @@ namespace Nut {
 				out << YAML::Key << "Texture" << YAML::Value << "none";
 			}
 			
+			out << YAML::Key << "TilingFactor" << YAML::Value << sc.TilingFactor;
 
 			out << YAML::EndMap;
 		}
@@ -235,6 +236,7 @@ namespace Nut {
 					if (spriteRendererComponent["Texture"].as<std::string>() != "none") {
 						src.Texture = Texture2D::Create(spriteRendererComponent["Texture"].as<std::string>());
 					}
+					src.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
 				}
 			}
 		}

@@ -28,3 +28,4 @@ Entitys:
     SpriteRendererComponent:
       Color: [0, 1, 0, 1]
       Texture: assets\textures\ChernoLogo.png
+      TilingFactor: 1
