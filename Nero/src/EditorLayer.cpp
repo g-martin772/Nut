@@ -1,8 +1,13 @@
 #include "EditorLayer.h"
 
+#include <filesystem>
+
 #define PROFILE_SCOPE(name) Timer timer##__LINE__(name, [&](ProfileResult profileResult) { m_ProfileResults.push_back(profileResult); })
 
 namespace Nut {
+
+	extern const std::filesystem::path g_AssetPath;
+
 	void EditorLayer::OnAttach()
 	{
 		NT_PROFILE_FUNCTION();
@@ -251,6 +256,18 @@ namespace Nut {
 
 #endif
 
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			{
+				const wchar_t* path = (const wchar_t*)payload->Data;
+				OpenScene(std::filesystem::path(g_AssetPath) / path);
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+
+
 		// -------------
 		//     Gizmos
 		// -------------
@@ -300,6 +317,7 @@ namespace Nut {
 		ImGui::PopStyleVar();
 
 		m_SceneHierachyPanel.OnImGuiRender();
+		m_ContentBrowserPanel.OnImGuiRender();
 
 		ImGui::End(); //Dockspace
 	}
@@ -417,6 +435,16 @@ namespace Nut {
 			break;
 		}
 		return false;
+	}
+
+	void EditorLayer::OpenScene(const std::filesystem::path& path)
+	{
+		m_ActiveScene = std::make_shared<Scene>();
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_SceneHierachyPanel.SetContext(m_ActiveScene);
+
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.Deserialize(path.string());
 	}
 }
 

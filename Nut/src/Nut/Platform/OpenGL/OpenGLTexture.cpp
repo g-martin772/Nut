@@ -8,8 +8,11 @@ namespace Nut {
 
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height) : m_Width(width), m_Height(height)
 	{
+		m_InternalFormat = GL_RGBA8;
+		m_DataFormat = GL_RGBA;
+
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, GL_RGBA8, m_Width, m_Height);
+		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -26,22 +29,31 @@ namespace Nut {
 		NT_CORE_ASSERT(data, "Failed to load image");
 		m_Width = width; m_Height = height;
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+		GLenum internalFormat = 0, dataFormat = 0;
+		if (channels == 4) {
+			internalFormat = GL_RGBA8;
+			dataFormat = GL_RGBA;
+		}
+		else if (channels == 3) {
+			internalFormat = GL_RGB8;
+			dataFormat = GL_RGB;
+		}
 
-		if(channels == 3)
-			glTextureStorage2D(m_RendererID, 1, GL_RGB8, m_Width, m_Height);
-		else if (channels == 4)
-			glTextureStorage2D(m_RendererID, 1, GL_RGBA8, m_Width, m_Height);
-		else NT_CORE_ASSERT(false, "Invalid texture channel! Only RGB and RGBA supported!")
+		m_InternalFormat = internalFormat;
+		m_DataFormat = dataFormat;
+
+		NT_CORE_ASSERT(internalFormat & dataFormat, "Format not supported");
+
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+		glTextureStorage2D(m_RendererID, 1, internalFormat, m_Width, m_Height);
 
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		if (channels == 3)
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, GL_RGB, GL_UNSIGNED_BYTE, data);
-		else if (channels == 4)
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		else NT_CORE_ASSERT(false, "Invalid texture channel! Only RGB and RGBA supported!")
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 
 		stbi_image_free(data);
 	}
@@ -52,7 +64,7 @@ namespace Nut {
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const

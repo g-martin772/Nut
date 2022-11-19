@@ -3,6 +3,7 @@
 #include <Nut.h>
 
 #include "Panels/SceneHierachyPanel.h"
+#include "Panels/ContentBrowserPanel.h"
 
 namespace Nut {
 	class EditorLayer : public Layer {
@@ -18,6 +19,7 @@ namespace Nut {
 	private:
 		void CreateNewScene();
 		bool OnKeyPressed(KeyPressedEvent& e);
+		void OpenScene(const std::filesystem::path& path);
 		bool OnMouseButtonPressed(ButtonPressedEvent& e);
 	private:
 		ShaderLibrary m_Shader;
@@ -42,5 +44,6 @@ namespace Nut {
 
 		//Panels
 		SceneHierachyPanel m_SceneHierachyPanel;
+		ContentBrowserPanel m_ContentBrowserPanel;
 	};																				// hi
 }

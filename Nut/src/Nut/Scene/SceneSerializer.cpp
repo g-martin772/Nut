@@ -127,6 +127,14 @@ namespace Nut {
 			auto& sc = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << (glm::vec4)sc.Color;
 
+			if (!sc.Texture.get()->GetPath().empty()) {
+				out << YAML::Key << "Texture" << YAML::Value << sc.Texture.get()->GetPath();
+			}
+			else {
+				out << YAML::Key << "Texture" << YAML::Value << "none";
+			}
+			
+
 			out << YAML::EndMap;
 		}
 
@@ -224,6 +232,9 @@ namespace Nut {
 				if (spriteRendererComponent) {
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
+					if (spriteRendererComponent["Texture"].as<std::string>() != "none") {
+						src.Texture = Texture2D::Create(spriteRendererComponent["Texture"].as<std::string>());
+					}
 				}
 			}
 		}
