@@ -50,13 +50,15 @@ namespace Nut {
 
 		static const char* GetCacheDirectory()
 		{
-			// TODO: make sure the assets directory is valid
+			if (!std::filesystem::exists("./assets"))
+				std::filesystem::create_directories("./assets");
 			return "assets/cache/shader/opengl";
 		}
 
 		static void CreateCacheDirectoryIfNeeded()
 		{
 			std::string cacheDirectory = GetCacheDirectory();
+
 			if (!std::filesystem::exists(cacheDirectory))
 				std::filesystem::create_directories(cacheDirectory);
 		}

@@ -4,7 +4,7 @@
 #include "EditorLayer.h"
 
 namespace Nut {
-	class NeroEditor : public Nut::Application {
+	class NeroEditor : public Application {
 	public:
 		NeroEditor(ApplicationCommandLineArgs args) : Application("Nero Editor", 1500, 900, args) {
 			PushLayer(new EditorLayer());
@@ -19,4 +19,3 @@ namespace Nut {
 		return new NeroEditor(args);
 	}
 }
- 

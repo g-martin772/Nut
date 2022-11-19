@@ -14,7 +14,17 @@ namespace Nut {
 		m_FrameBuffer = FrameBuffer::Create(fbSpec);
 
 		m_ActiveScene = std::make_shared<Scene>();
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierachyPanel.SetContext(m_ActiveScene);
+
+		auto commandLineArgs = Application::Get().GetCommandLineArgs();
+		if (commandLineArgs.Count > 1)
+		{
+			auto sceneFilePath = commandLineArgs[1];
+			NT_INFO("{0}", sceneFilePath);
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Deserialize(sceneFilePath);
+		}
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
