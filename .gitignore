@@ -8,5 +8,5 @@ scripts/__pycache__/
 *.filters
 *.vcxproj
 *.sln
-Nut/vendor/VulkanSDK/*.exe
+Nut/vendor/VulkanSDK/VulkanSDK.exe
 Nero/assets/cache/

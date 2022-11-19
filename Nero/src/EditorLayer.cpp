@@ -33,46 +33,8 @@ namespace Nut {
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
-#if 0
-
-		m_SquareEntity = m_ActiveScene->CreateEntity("Square");
-		m_SquareEntity.AddComponent<SpriteRendererComponent>(glm::vec4{ 0, 1, 0, 1 });
-
-		m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
-		m_CameraEntity.AddComponent<CameraComponent>();
-
-		class CameraController : public ScriptableEntity
-		{
-		public:
-			void OnCreate()
-			{
-			}
-
-			void OnDestroy()
-			{
-			}
-
-			void OnUpdate(Timestep ts)
-			{
-				auto& transform = GetComponent<TransformComponent>().Translation;
-				float speed = 5.0f;
-
-
-				if (Input::IsKeyPressed(NT_KEY_A))
-					transform.x -= speed * ts;
-				if (Input::IsKeyPressed(NT_KEY_D))
-					transform.x += speed * ts;
-				if (Input::IsKeyPressed(NT_KEY_W))
-					transform.y += speed * ts;
-				if (Input::IsKeyPressed(NT_KEY_S))
-					transform.y -= speed * ts;
-
-			}
-		};
-
-		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-#endif
-
+		m_IconPlay = Texture2D::Create("resources/icons/editor/PlayButton.png");
+		m_IconStop = Texture2D::Create("resources/icons/editor/StopButton.png");
 	}
 
 	void EditorLayer::OnUpdate(Nut::Timestep ts)
@@ -89,11 +51,6 @@ namespace Nut {
 			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 		}
 
-		if (m_ViewportFocus || m_ViewportHover) {
-			m_EditorCamera.OnUpdate(ts);
-			m_CameraController.OnUpdate(ts);
-		}
-
 		Renderer2D::ResetStats();
 		m_FrameBuffer->Bind();
 
@@ -102,23 +59,27 @@ namespace Nut {
 
 		m_FrameBuffer->ClearAttachment(1, -1);
 
-
-		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
-
-		/*Renderer2D::BeginScene(m_CameraController.GetCamera());
-
-		for (float y = -10.0f; y < 10.0f; y += 0.25f) {
-			for (float x = -10.0f; x < 10.0f; x += 0.25f)
+		switch (m_SceneState)
+		{
+			case SceneState::Edit:
 			{
-				glm::vec4 color = { ((x + 5.0f) / 10.0f), 0.4f, ((y + 5.0f) / 10.0f), 1.0f };
-				Nut::Renderer2D::DrawQuad({ x, y }, { 0.20f, 0.20f }, color);
+				if (m_ViewportFocus)
+					m_CameraController.OnUpdate(ts);
+
+				m_EditorCamera.OnUpdate(ts);
+
+				m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+				break;
+			}
+			case SceneState::Play:
+			{
+				m_ActiveScene->OnUpdateRuntime(ts);
+				break;
 			}
 		}
 
-		Renderer2D::DrawQuad({ 0, 0 }, { 1, 1 }, { 0.9f, 0.5f, 0.0f, 1.0f });
 
-		Renderer2D::EndScene();*/
-
+		//Mouse picking stuff
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
 		my -= m_ViewportBounds[0].y;
@@ -319,7 +280,48 @@ namespace Nut {
 		m_SceneHierachyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 
+		UI_Toolbar();
+
 		ImGui::End(); //Dockspace
+	}
+
+	void EditorLayer::UI_Toolbar()
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		auto& colors = ImGui::GetStyle().Colors;
+		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f));
+		const auto& buttonActive = colors[ImGuiCol_ButtonActive];
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(buttonActive.x, buttonActive.y, buttonActive.z, 0.5f));
+
+		ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+		float size = ImGui::GetWindowHeight() - 4.0f;
+		Ref<Texture2D> icon = m_SceneState == SceneState::Edit ? m_IconPlay : m_IconStop;
+		ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
+		if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0))
+		{
+			if (m_SceneState == SceneState::Edit)
+				OnScenePlay();
+			else if (m_SceneState == SceneState::Play)
+				OnSceneStop();
+		}
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor(3);
+		ImGui::End();
+	}
+
+	void EditorLayer::OnScenePlay()
+	{
+		m_SceneState = SceneState::Play;
+	}
+
+	void EditorLayer::OnSceneStop()
+	{
+		m_SceneState = SceneState::Edit;
+
 	}
 
 	void EditorLayer::OnDetach()

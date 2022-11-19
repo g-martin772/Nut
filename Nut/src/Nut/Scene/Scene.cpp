@@ -72,29 +72,29 @@ namespace Nut {
 			});
 
 		//Render 2D
-		Camera* mainCamera = nullptr;
+		Camera* mainCamera;
 		glm::mat4 cameraTransform;
+		
+		auto view = m_Registry.view<TransformComponent, CameraComponent>();
+		for (auto entity : view)
 		{
-			auto view = m_Registry.view<TransformComponent, CameraComponent>();
-			for (auto entity : view)
-			{
-				auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+			auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
 
-				if (camera.Primary)
-				{
-					mainCamera = &camera.Camera;
-					cameraTransform = transform.GetTransform();
-					break;
-				}
+			if (camera.Primary)
+			{
+				mainCamera = &camera.Camera;
+				cameraTransform = transform.GetTransform();
+				break;
 			}
 		}
+		
 		
 		Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
 		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
 		for (auto entity : group)
 		{
 			auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color, (int) entity);
+			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int) entity);
 		}
 		Renderer2D::EndScene();
 		

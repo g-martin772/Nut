@@ -19,7 +19,12 @@ project "Sandbox"
             "%{wks.location}/Nut/src",
             "%{wks.location}/Nut/vendor",
             "%{IncludeDir.spdlog}",
-            "%{IncludeDir.yaml}"
+            "%{IncludeDir.yaml}",
+            "%{IncludeDir.glm}",
+            "%{IncludeDir.entt}",
+            "%{IncludeDir.ImGuizmo}",
+            "%{IncludeDir.ImGui}",
+            "%{IncludeDir.GLFW}", -- for imgui context, neet to get rid of in the future
         }
 
         links{
