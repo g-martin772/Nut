@@ -29,8 +29,10 @@ namespace Nut {
 		void UI_Toolbar();
 	private:
 		//Renderer stuff
-		ShaderLibrary m_Shader;
 		Ref<FrameBuffer> m_FrameBuffer;
+
+		float m_ElapsedTime = 0.0f;
+		int m_FrameCount = 0;
 
 		//ECS
 		Ref<Scene> m_ActiveScene;

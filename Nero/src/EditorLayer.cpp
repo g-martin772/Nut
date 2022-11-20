@@ -40,6 +40,15 @@ namespace Nut {
 	void EditorLayer::OnUpdate(Nut::Timestep ts)
 	{
 		NT_PROFILE_FUNCTION();
+
+		m_ElapsedTime += ts.GetMilliseconds();
+		if (m_ElapsedTime >= 1000) {
+			NT_TRACE("Currently running with: {0}fps", m_FrameCount);
+			m_FrameCount = 0;
+			m_ElapsedTime = 0.0f;
+		}
+		m_FrameCount++;
+
 		if (FrameBufferSpecs spec = m_FrameBuffer->GetSpecs();
 			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
 			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
@@ -437,6 +446,9 @@ namespace Nut {
 
 	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
+		if (m_SceneState != SceneState::Edit)
+			OnSceneStop();
+
 		m_ActiveScene = std::make_shared<Scene>();
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierachyPanel.SetContext(m_ActiveScene);
