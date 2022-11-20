@@ -13,9 +13,10 @@ IncludeDir["stb"] = "%{wks.location}/Nut/vendor/stb"
 IncludeDir["entt"] = "%{wks.location}/Nut/vendor/enTT"
 IncludeDir["yaml"] = "%{wks.location}/Nut/vendor/yaml-cpp/include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/Nut/vendor/ImGuizmo"
-IncludeDir["shaderc"] = "%{wks.location}/Hazel/vendor/shaderc/include"
-IncludeDir["SPIRV_Cross"] = "%{wks.location}/Hazel/vendor/SPIRV-Cross"
+IncludeDir["shaderc"] = "%{wks.location}/Nut/vendor/shaderc/include"
+IncludeDir["SPIRV_Cross"] = "%{wks.location}/Nut/vendor/SPIRV-Cross"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
+IncludeDir["Box2D"] = "%{wks.location}/Nut/vendor/Box2D/include"
 
 LibraryDir = {}
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"

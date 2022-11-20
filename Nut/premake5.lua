@@ -42,6 +42,7 @@ project "Nut"
         "%{IncludeDir.stb}",
         "%{IncludeDir.SPIRV_Cross}",
         "%{IncludeDir.shaderc}",
+        "%{IncludeDir.box2d}",
     }
 
     links{
