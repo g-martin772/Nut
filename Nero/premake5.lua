@@ -25,7 +25,6 @@ project "Nero"
         "%{IncludeDir.ImGuizmo}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.GLFW}", -- for imgui context, neet to get rid of in the future
-        "%{IncludeDir.box2d}",
     }
 
     links{

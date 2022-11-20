@@ -42,7 +42,7 @@ project "Nut"
         "%{IncludeDir.stb}",
         "%{IncludeDir.SPIRV_Cross}",
         "%{IncludeDir.shaderc}",
-        "%{IncludeDir.box2d}",
+        "%{IncludeDir.Box2D}",
     }
 
     links{
@@ -50,6 +50,7 @@ project "Nut"
         "GLAD",
         "ImGui",
         "yaml-cpp",
+        "Box2D",
         "opengl32.lib"
     }
 
