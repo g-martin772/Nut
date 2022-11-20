@@ -94,10 +94,11 @@ namespace Nut {
 	SceneSerializer::SceneSerializer(const Ref<Scene>& scene) : m_Scene(scene) {}
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity) {
+		NT_CORE_ASSERT(entity.HasComponent<IDComponent>(), "Invalid Entity");
+
 		out << YAML::BeginMap;
-		out << YAML::Key << "Entity";
-		out << YAML::Value << "1234567890";
-		
+
+		out << YAML::Key << "Entity" << YAML::Value << (uint64_t)entity.GetComponent<IDComponent>().ID;
 
 		if (entity.HasComponent<TagComponent>()) {
 			out << YAML::Key << "TagComponent";
@@ -263,6 +264,7 @@ namespace Nut {
 				NT_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
 				Entity deserializedEntity = m_Scene->CreateEntity(name);
+				deserializedEntity.GetComponent<IDComponent>().ID = UUID(uuid);
 
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent) {

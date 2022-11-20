@@ -20,7 +20,7 @@ namespace Nut {
 		case RigidBody2DComponent::BodyType::Dynamic:	return b2_dynamicBody;
 		case RigidBody2DComponent::BodyType::Kinematic:	return b2_kinematicBody;
 		}
-
+		
 		NT_CORE_ASSERT(false, "Unknow body type");
 		return b2_staticBody;
 	}
@@ -38,6 +38,7 @@ namespace Nut {
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
 		entity.AddComponent<TransformComponent>();
@@ -198,6 +199,11 @@ namespace Nut {
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
 		static_assert(false);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	{
 	}
 
 	template<>

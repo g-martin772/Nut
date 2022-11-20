@@ -16,7 +16,6 @@ namespace Sandbox {
 		void OnImGuiRender() override;
 	private:
 		Nut::ShaderLibrary m_Shader;
-		Nut::OrthographicCameraController m_CameraController;
 
 		Nut::Ref<Nut::Texture2D> m_CheckerboardTexture;
 		Nut::Ref<Nut::Texture2D> m_SpriteSheet;

@@ -1,5 +1,10 @@
 #pragma once
 
+#include "Nut/Scene/SceneCamera.h"
+#include "Nut/Scene/ScriptableEntity.h"
+#include "Nut/Renderer/Texture.h"
+#include "Nut/Core/UUID.h"
+
 #include <enTT/entt.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -9,11 +14,15 @@
 
 #include <functional>
 
-#include "Nut/Scene/SceneCamera.h"
-#include "Nut/Scene/ScriptableEntity.h"
-#include "Nut/Renderer/Texture.h"
-
 namespace Nut {
+
+	struct IDComponent {
+		UUID ID;
+
+		IDComponent() = default;
+		IDComponent(const IDComponent&) = default;
+	};
+
 	struct TagComponent {
 		std::string Tag;
 
