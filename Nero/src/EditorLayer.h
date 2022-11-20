@@ -8,7 +8,7 @@
 namespace Nut {
 	class EditorLayer : public Layer {
 	public:
-		inline EditorLayer() : Layer("Sandbox2D"), m_CameraController(1280.0f / 720.0f, true) {}
+		inline EditorLayer() : Layer("Sandbox2D") {}
 		inline ~EditorLayer() {}
 
 		void OnUpdate(Nut::Timestep ts) override;
@@ -30,7 +30,6 @@ namespace Nut {
 	private:
 		//Renderer stuff
 		ShaderLibrary m_Shader;
-		OrthographicCameraController m_CameraController;
 		Ref<FrameBuffer> m_FrameBuffer;
 
 		//ECS

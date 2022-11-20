@@ -21,7 +21,6 @@
 #include "Nut/Renderer/Shader.h"
 #include "Nut/Core/Timestep.h"
 #include "Nut/Renderer/Texture.h"
-#include "Nut/Camera/OrthoGraphicCameraController.h"
 #include "Nut/Renderer/Framebuffer.h"
 #include "Nut/Scene/Scene.h"
 #include "Nut/Scene/Components.h"
