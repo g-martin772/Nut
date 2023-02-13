@@ -12,6 +12,7 @@
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_circle_shape.h>
 
 namespace Nut {
 
@@ -97,6 +98,24 @@ namespace Nut {
 				b2Fixture* fixture = body->CreateFixture(&fixtureDef);
 				bc2d.RuntimeFixture = fixture;
 			}
+
+			if (entity.HasComponent<CircleCollider2DComponent>())
+			{
+				auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+
+				b2CircleShape circleShape;
+				circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
+				circleShape.m_radius = cc2d.Radius;
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &circleShape;
+				fixtureDef.density = cc2d.Density;
+				fixtureDef.friction = cc2d.Friction;
+				fixtureDef.restitution = cc2d.Restitution;
+				fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
+				body->CreateFixture(&fixtureDef);
+			}
+
 		}
 	}
 
@@ -123,10 +142,6 @@ namespace Nut {
 			Renderer2D::DrawCircle(transform.GetTransform(), circle, (int)entity);
 		}
 
-		RenderCommand::SetLineWidth(2.0f);
-		Renderer2D::DrawLine(glm::vec3(0.0f), glm::vec3(5.0f), glm::vec4(1, 0, 1, 1));
-		Renderer2D::DrawRect(glm::vec3(0.0f), glm::vec3(5.0f), glm::vec4(0, 1, 1, 1));
-
 		Renderer2D::EndScene();
 	}
 
@@ -141,8 +156,8 @@ namespace Nut {
 				nsc.Instance->OnCreate();
 			}
 
-		nsc.Instance->OnUpdate(ts);
-			});
+			nsc.Instance->OnUpdate(ts);
+		});
 
 		// Physics
 		{
@@ -267,6 +282,7 @@ namespace Nut {
 		CopyComponent<RigidBody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CircleRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<CircleCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newScene;
 	}
@@ -283,6 +299,7 @@ namespace Nut {
 		CopyComponentIfExists<RigidBody2DComponent>(newEntity, entity);
 		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
 		CopyComponentIfExists<CircleRendererComponent>(newEntity, entity);
+		CopyComponentIfExists<CircleCollider2DComponent>(newEntity, entity);
 	}
 
 	template<typename T>
@@ -335,6 +352,11 @@ namespace Nut {
 
 	template<>
 	void Scene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component)
 	{
 	}
 }
