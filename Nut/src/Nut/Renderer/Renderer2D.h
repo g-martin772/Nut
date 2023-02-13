@@ -1,4 +1,7 @@
 #pragma once
+
+#include <glm/glm.hpp>
+
 #include <Nut/Camera/Camera.h>
 #include <Nut/Camera/OrthographicCamera.h>
 #include <Nut/Renderer/Texture.h>
@@ -34,11 +37,15 @@ namespace Nut {
 
 		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID);
 
+		static void DrawCircle(const glm::mat4& transform, CircleRendererComponent& cc, int entityID);
+		static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, int entityID = -1);
+
 		// Stats
 		struct Statistics
 		{
 			uint32_t DrawCalls = 0;
 			uint32_t QuadCount = 0;
+			uint32_t CircleCount = 0;
 
 			uint32_t GetTotalVertexCount() const { return QuadCount * 4; }
 			uint32_t GetTotalIndexCount() const { return QuadCount * 6; }

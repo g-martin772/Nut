@@ -24,6 +24,9 @@ namespace Nut {
 		void OnRuntimeStart();
 		void OnRuntimeStop();
 
+		static Ref<Scene> Copy(Ref<Scene> other);
+		void DuplicateEntity(Entity entity);
+
 		void OnUpdateEditor(Timestep ts, EditorCamera& camera);
 		void OnUpdateRuntime(Timestep ts);
 		void OnViewportResize(uint32_t width, uint32_t height);

@@ -292,6 +292,15 @@ namespace Nut {
 			ImGui::DragFloat("Tiling Factor", &component.TilingFactor, 0.1f, 0.0f, 100.0f);
 		});
 
+		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto& component)
+		{
+			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+
+			ImGui::DragFloat("Radius", &component.Radius, 0.1f, 0.0f, 100.0f);
+			ImGui::DragFloat("Fade", &component.Fade, 0.05f, 0.0f, 1.0f);
+			ImGui::DragFloat("Thickness", &component.Thickness, 0.1f, 0.0f, 1.0f);
+		});
+
 		DrawComponent<RigidBody2DComponent>("Rigidbody 2D", entity, [](auto& component) 
 		{
 			const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
@@ -342,6 +351,13 @@ namespace Nut {
 			if (!m_SelectionContext.HasComponent<SpriteRendererComponent>()) {
 				if (ImGui::MenuItem("Sprite Renderer")) {
 					m_SelectionContext.AddComponent<SpriteRendererComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			if (!m_SelectionContext.HasComponent<CircleRendererComponent>()) {
+				if (ImGui::MenuItem("Cirlce Renderer")) {
+					m_SelectionContext.AddComponent<CircleRendererComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 			}

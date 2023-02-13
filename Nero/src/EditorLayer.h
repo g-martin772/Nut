@@ -17,13 +17,21 @@ namespace Nut {
 		void OnDetach() override;
 		void OnImGuiRender() override;
 	private:
+		void NewScene();
 		void CreateNewScene();
 		bool OnKeyPressed(KeyPressedEvent& e);
+		void OpenScene();
 		void OpenScene(const std::filesystem::path& path);
-		bool OnMouseButtonPressed(ButtonPressedEvent& e);
+		void SaveScene();
+		void SaveSceneAs();
+
+		void SerializeScene(Ref<Scene> scene, const std::filesystem::path& path);
+		void OnDuplicateEntity();
 
 		void OnScenePlay();
 		void OnSceneStop();
+
+		bool OnMouseButtonPressed(ButtonPressedEvent& e);
 
 		// UI Panels
 		void UI_Toolbar();
@@ -36,6 +44,8 @@ namespace Nut {
 
 		//ECS
 		Ref<Scene> m_ActiveScene;
+		Ref<Scene> m_EditorScene;
+		std::filesystem::path m_EditorScenePath;
 		Entity m_SquareEntity;
 		Entity m_CameraEntity;
 		Entity m_HoveredEntity;

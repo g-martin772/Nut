@@ -11,5 +11,7 @@ namespace Nut {
 		void Clear() override;
 
 		void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
+		void DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount) override;
+		void SetLineWidth(float lineWidth) override;
 	};
 }

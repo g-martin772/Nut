@@ -1,11 +1,9 @@
 #pragma once
 
 #include "Nut/Scene/SceneCamera.h"
-#include "Nut/Scene/ScriptableEntity.h"
 #include "Nut/Renderer/Texture.h"
 #include "Nut/Core/UUID.h"
 
-#include <enTT/entt.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -67,6 +65,16 @@ namespace Nut {
 		operator const glm::vec4& () const { return Color; }
 	};
 
+	struct CircleRendererComponent {
+		glm::vec4 Color{ 1.0f };
+		float Radius = 0.5f;
+		float Thickness = 1.0f;
+		float Fade = 0.005f;
+
+		CircleRendererComponent() = default;
+		CircleRendererComponent(const CircleRendererComponent&) = default;
+	};
+
 	struct CameraComponent {
 		SceneCamera Camera;
 		bool Primary = true;
@@ -75,6 +83,9 @@ namespace Nut {
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
 	};
+
+
+	class ScriptableEntity;
 
 	struct NativeScriptComponent
 	{

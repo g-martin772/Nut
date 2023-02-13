@@ -26,6 +26,16 @@ namespace Nut {
 			NT_PROFILE_FUNCTION();
 			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
 		}
+
+		inline static void DrawLines(const Ref<VertexArray> vertexArray, uint32_t vertexCount = 0) {
+			NT_PROFILE_FUNCTION();
+			s_RendererAPI->DrawLines(vertexArray, vertexCount);
+		}
+
+		inline static void SetLineWidth(float lineWidth) {
+			NT_PROFILE_FUNCTION();
+			s_RendererAPI->SetLineWidth(lineWidth);
+		}
 	private:
 		static RendererAPI* s_RendererAPI;
 	};

@@ -170,11 +170,29 @@ namespace Nut {
 			if (ImGui::BeginMenu("Application"))
 			{
 				// TODO Dialog for normal save
-				if (ImGui::MenuItem("New...", "Ctrl+N")) { m_ActiveScene = std::make_shared<Scene>(); m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); m_SceneHierachyPanel.SetContext(m_ActiveScene); CreateNewScene(); };
-				if (ImGui::MenuItem("Open...", "Ctrl+O")) { m_ActiveScene = std::make_shared<Scene>(); m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); m_SceneHierachyPanel.SetContext(m_ActiveScene); SceneSerializer s(m_ActiveScene); s.Deserialize(FileDialog::OpenFile("Nut Scene (*.nut)\0*.nut\0")); };
-				if (ImGui::MenuItem("Save...", "Ctrl+S")) { SceneSerializer s(m_ActiveScene); };
-				if (ImGui::MenuItem("SaveAs...", "Ctrl+Shift+S")) { SceneSerializer s(m_ActiveScene); s.Serialize(FileDialog::SaveFile("Nut Scene (*.nut)\0*.nut\0")); };
-				if (ImGui::MenuItem("Close", "Shift+Esc")) Nut::Application::Get().Close();
+				if (ImGui::MenuItem("New...", "Ctrl+N")) { 
+					m_ActiveScene = std::make_shared<Scene>(); 
+					m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); 
+					m_SceneHierachyPanel.SetContext(m_ActiveScene);
+					CreateNewScene(); 
+					m_EditorScene = m_ActiveScene;
+				};
+				if (ImGui::MenuItem("Open...", "Ctrl+O")) { 
+					m_ActiveScene = std::make_shared<Scene>(); 
+					m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); 
+					m_SceneHierachyPanel.SetContext(m_ActiveScene); 
+					SceneSerializer s(m_ActiveScene); 
+					s.Deserialize(FileDialog::OpenFile("Nut Scene (*.nut)\0*.nut\0")); 
+				};
+				if (ImGui::MenuItem("Save...", "Ctrl+S")) { 
+					SceneSerializer s(m_ActiveScene); 
+				};
+				if (ImGui::MenuItem("SaveAs...", "Ctrl+Shift+S")) { 
+					SceneSerializer s(m_ActiveScene); 
+					s.Serialize(FileDialog::SaveFile("Nut Scene (*.nut)\0*.nut\0")); 
+				};
+				if (ImGui::MenuItem("Close", "Shift+Esc")) 
+					Nut::Application::Get().Close();
 				ImGui::EndMenu();
 			}
 
@@ -316,19 +334,6 @@ namespace Nut {
 		ImGui::End();
 	}
 
-	void EditorLayer::OnScenePlay()
-	{
-		m_ActiveScene->OnRuntimeStart();
-		m_SceneState = SceneState::Play;
-	}
-
-	void EditorLayer::OnSceneStop()
-	{
-		m_ActiveScene->OnRuntimeStop();
-		m_SceneState = SceneState::Edit;
-
-	}
-
 	void EditorLayer::OnDetach()
 	{
 
@@ -384,39 +389,27 @@ namespace Nut {
 		switch (e.GetKeyCode())
 		{
 		case NT_KEY_S: {
-			if (control && shift) {
-				SceneSerializer s(m_ActiveScene);
-				s.Serialize(FileDialog::SaveFile("Nut Scene (*.nut)\0*.nut\0"));
-				return true;
+			if (control)
+			{
+				if (shift)
+					SaveSceneAs();
+				else
+					SaveScene();
 			}
 
-			if (control) {
-				return true;
-			}
-
-			return false;
+			break;
 		}
-		case NT_KEY_O: {
-			if (control) {
-				m_ActiveScene = std::make_shared<Scene>();
-				m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-				m_SceneHierachyPanel.SetContext(m_ActiveScene); SceneSerializer s(m_ActiveScene);
-				s.Deserialize(FileDialog::OpenFile("Nut Scene (*.nut)\0*.nut\0"));
-				return true;
-			}
-
-			return false;
+		case NT_KEY_O:
+		{
+			if (control)
+				OpenScene();
+			break;
 		}
-		case NT_KEY_N: {
-			if (control) {
-				m_ActiveScene = std::make_shared<Scene>();
-				m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-				m_SceneHierachyPanel.SetContext(m_ActiveScene);
-				CreateNewScene();
-				return true;
-			}
-
-			return false;
+		case NT_KEY_N:
+		{
+			if (control)
+				NewScene();
+			break;
 		}
 		case NT_KEY_ESCAPE: {
 			if (shift) {
@@ -425,6 +418,13 @@ namespace Nut {
 			}
 
 			return false;
+		}
+		case NT_KEY_D:
+		{
+			if (control)
+				OnDuplicateEntity();
+
+			break;
 		}
 
 						  // Gizmos
@@ -444,17 +444,101 @@ namespace Nut {
 		return false;
 	}
 
+	void EditorLayer::NewScene()
+	{
+		m_EditorScene = std::make_shared<Scene>();
+		m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_SceneHierachyPanel.SetContext(m_EditorScene);
+
+		m_ActiveScene = m_EditorScene;
+
+		m_EditorScenePath = std::filesystem::path();
+	}
+
+	void EditorLayer::OpenScene()
+	{
+		std::string filepath = FileDialog::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
+		if (!filepath.empty())
+			OpenScene(filepath);
+	}
+
 	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
 		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
 
-		m_ActiveScene = std::make_shared<Scene>();
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_SceneHierachyPanel.SetContext(m_ActiveScene);
+		if (path.extension().string() != ".nut")
+		{
+			NT_WARN("Could not load {0} - not a scene file", path.filename().string());
+			return;
+		}
 
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.Deserialize(path.string());
+		Ref<Scene> newScene = std::make_shared<Scene>();
+		SceneSerializer serializer(newScene);
+		if (serializer.Deserialize(path.string()))
+		{
+			m_EditorScene = newScene;
+			m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_SceneHierachyPanel.SetContext(m_EditorScene);
+
+			m_ActiveScene = m_EditorScene;
+			m_EditorScenePath = path;
+		}
+	}
+
+	void EditorLayer::SaveScene()
+	{
+		if (!m_EditorScenePath.empty())
+			SerializeScene(m_ActiveScene, m_EditorScenePath);
+		else
+			SaveSceneAs();
+	}
+
+	void EditorLayer::SaveSceneAs()
+	{
+		std::string filepath = FileDialog::SaveFile("Hazel Scene (*.hazel)\0*.hazel\0");
+		if (!filepath.empty())
+		{
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Serialize(filepath);
+			SerializeScene(m_ActiveScene, filepath);
+			m_EditorScenePath = filepath;
+		}
+	}
+
+	void EditorLayer::SerializeScene(Ref<Scene> scene, const std::filesystem::path& path)
+	{
+		SceneSerializer serializer(scene);
+		serializer.Serialize(path.string());
+	}
+
+	void EditorLayer::OnScenePlay()
+	{
+		m_SceneState = SceneState::Play;
+
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_ActiveScene->OnRuntimeStart();
+
+		m_SceneHierachyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OnSceneStop()
+	{
+		m_SceneState = SceneState::Edit;
+
+		m_ActiveScene->OnRuntimeStop();
+		m_ActiveScene = m_EditorScene;
+
+		m_SceneHierachyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OnDuplicateEntity()
+	{
+		if (m_SceneState != SceneState::Edit)
+			return;
+
+		Entity selectedEntity = m_SceneHierachyPanel.GetSelectedEntity();
+		if (selectedEntity)
+			m_EditorScene->DuplicateEntity(selectedEntity);
 	}
 }
-

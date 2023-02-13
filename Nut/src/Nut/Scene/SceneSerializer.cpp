@@ -166,6 +166,20 @@ namespace Nut {
 			out << YAML::EndMap;
 		}
 
+		if (entity.HasComponent<CircleRendererComponent>()) {
+			out << YAML::Key << "CircleRendererComponent";
+			out << YAML::BeginMap;
+
+			auto& cc = entity.GetComponent<CircleRendererComponent>();
+
+			out << YAML::Key << "Color" << YAML::Value << (glm::vec4)cc.Color;
+			out << YAML::Key << "Fade" << YAML::Value << cc.Fade;
+			out << YAML::Key << "Radius" << YAML::Value << cc.Radius;
+			out << YAML::Key << "Thickness" << YAML::Value << cc.Thickness;
+
+			out << YAML::EndMap;
+		}
+
 		if (entity.HasComponent<RigidBody2DComponent>()) {
 			out << YAML::Key << "RigidBody2DComponent";
 			out << YAML::BeginMap;
@@ -300,6 +314,15 @@ namespace Nut {
 						src.Texture = Texture2D::Create(spriteRendererComponent["Texture"].as<std::string>());
 					}
 					src.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
+				}
+
+				auto cirlceRendererComponent = entity["CircleRendererComponent"];
+				if (cirlceRendererComponent) {
+					auto& cc = deserializedEntity.AddComponent<CircleRendererComponent>();
+					cc.Color = cirlceRendererComponent["Color"].as<glm::vec4>();
+					cc.Thickness = cirlceRendererComponent["Thickness"].as<float>();
+					cc.Radius = cirlceRendererComponent["Radius"].as<float>();
+					cc.Fade = cirlceRendererComponent["Fade"].as<float>();
 				}
 
 				auto rigidBody2DComponet = entity["RigidBody2DComponent"];
