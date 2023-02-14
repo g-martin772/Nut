@@ -72,6 +72,7 @@ namespace Nut {
 		float Fade = 0.005f;
 
 		CircleRendererComponent() = default;
+		CircleRendererComponent(glm::vec4 color) { Color = color; }
 		CircleRendererComponent(const CircleRendererComponent&) = default;
 	};
 

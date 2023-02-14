@@ -16,6 +16,7 @@ namespace Nut {
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnImGuiRender() override;
+		void OnOverlayRender();
 	private:
 		void NewScene();
 		void CreateNewScene();
@@ -29,6 +30,7 @@ namespace Nut {
 		void OnDuplicateEntity();
 
 		void OnScenePlay();
+		void OnSceneSimulate();
 		void OnSceneStop();
 
 		bool OnMouseButtonPressed(ButtonPressedEvent& e);
@@ -58,6 +60,8 @@ namespace Nut {
 		glm::vec2 m_ViewportSize;
 		glm::vec2 m_ViewportBounds[2];
 
+		bool m_ShowPhysicsColliders = false;
+
 		//Panels
 		SceneHierachyPanel m_SceneHierachyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
@@ -66,11 +70,11 @@ namespace Nut {
 		//Scene State
 		enum class SceneState
 		{
-			Edit = 0, Play = 1
+			Edit = 0, Play = 1, Simulate = 2
 		};
 		SceneState m_SceneState = SceneState::Edit;
 
 		//Editor resources
-		Ref<Texture2D> m_IconPlay, m_IconStop;
+		Ref<Texture2D> m_IconPlay, m_IconSimulate, m_IconStop;
 	};																				// hi
 }
