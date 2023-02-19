@@ -8,6 +8,7 @@
 #include "Nut/Events/AppEvent.h"
 #include "Nut/Core/LayerStack.h"
 #include "Nut/Renderer/Renderer.h"
+#include "Nut/Scripting/ScriptEngine.h"
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 #define EVENTLOGGER 0
@@ -31,6 +32,7 @@ namespace Nut {
 		m_Window->SetVSync(false);
 
 		Renderer::Init();
+		ScriptEngine::Init();
 
 		{
 			NT_PROFILE_FUNCTION();
@@ -43,7 +45,7 @@ namespace Nut {
 	}
 
 	Application::~Application() {
-
+		ScriptEngine::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer) {

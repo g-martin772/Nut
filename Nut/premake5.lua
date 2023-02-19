@@ -43,6 +43,7 @@ project "Nut"
         "%{IncludeDir.SPIRV_Cross}",
         "%{IncludeDir.shaderc}",
         "%{IncludeDir.Box2D}",
+		"%{IncludeDir.mono}",
     }
 
     links{
@@ -51,7 +52,12 @@ project "Nut"
         "ImGui",
         "yaml-cpp",
         "Box2D",
-        "opengl32.lib"
+        "opengl32.lib",
+		"%{Library.mono}",
+		"%{Library.WinSock}",
+		"%{Library.WinMM}",
+		"%{Library.WinVersion}",
+		"%{Library.BCrypt}",
     }
 
     filter "files:vendor/ImGuizmo/**.cpp"
