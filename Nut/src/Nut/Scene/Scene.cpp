@@ -13,6 +13,7 @@
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
 #include <box2d/b2_circle_shape.h>
+#include "../Scripting/ScriptEngine.h"
 
 namespace Nut {
 
@@ -40,16 +41,23 @@ namespace Nut {
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
-		entity.AddComponent<IDComponent>();
+		auto& id = entity.AddComponent<IDComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
 		entity.AddComponent<TransformComponent>();
+		m_EntityMap[id.ID] = entity;
 		return entity;
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);
+		m_EntityMap.erase(entity.GetComponent<IDComponent>().ID);
+	}
+
+	Entity Scene::GetEntityByUUID(UUID uuid)
+	{
+		return { m_EntityMap.at(uuid), this };
 	}
 
 	Entity Scene::GetPrimaryCameraEntity()
@@ -66,12 +74,16 @@ namespace Nut {
 
 	void Scene::OnRuntimeStart()
 	{
+		NT_CORE_INFO("Starting Scene");
 		OnPhysics2DStart();
+		OnScriptingStart();
 	}
 
 	void Scene::OnRuntimeStop()
 	{
 		OnPhysics2DStop();
+
+		OnScriptingStop();
 	}
 
 	void Scene::OnSimulationStart()
@@ -92,6 +104,8 @@ namespace Nut {
 	void Scene::OnUpdateRuntime(Timestep ts)
 	{
 		// Update scripts
+		ScriptEngine::OnRuntimeUpdate(ts);
+
 		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc) {
 			if (!nsc.Instance)
 			{
@@ -263,6 +277,23 @@ namespace Nut {
 		m_PhysicsWorld = nullptr;
 	}
 
+	void Scene::OnScriptingStart()
+	{
+		ScriptEngine::OnRuntimeStart(this);
+
+		auto view = m_Registry.view<ScriptComponent>();
+		for (auto e : view) {
+			Entity entity = { e, this };
+			const auto& sc = entity.GetComponent<ScriptComponent>();
+			ScriptEngine::OnCreateEntity(entity);
+		}
+	}
+
+	void Scene::OnScriptingStop()
+	{
+		ScriptEngine::OnRuntimeStop();
+	}
+
 	void Scene::RenderScene(EditorCamera& camera)
 	{
 		Renderer2D::BeginScene(camera);
@@ -336,6 +367,9 @@ namespace Nut {
 		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CircleRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CircleCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<ScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		newScene->m_EntityMap = enttMap;
 
 		return newScene;
 	}
@@ -353,6 +387,7 @@ namespace Nut {
 		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
 		CopyComponentIfExists<CircleRendererComponent>(newEntity, entity);
 		CopyComponentIfExists<CircleCollider2DComponent>(newEntity, entity);
+		CopyComponentIfExists<ScriptComponent>(newEntity, entity);
 	}
 
 	template<typename T>
@@ -395,6 +430,11 @@ namespace Nut {
 
 	template<>
 	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component)
 	{
 	}
 

@@ -1,6 +1,7 @@
 #include "SceneHierachyPanel.h"
 #include <imgui/imgui_internal.h>
 
+#include "Nut/Scripting/ScriptEngine.h"
 
 namespace Nut {
 
@@ -301,6 +302,25 @@ namespace Nut {
 			ImGui::DragFloat("Thickness", &component.Thickness, 0.1f, 0.0f, 1.0f);
 		});
 
+		DrawComponent<ScriptComponent>("Script Component (C#)", entity, [](auto& component) 
+		{
+			const auto& entityClasses = ScriptEngine::GetEntityClasses();
+			bool scriptClassExists = entityClasses.find(component.Name) != entityClasses.end();
+			static char buffer[64];
+			strcpy(buffer, component.Name.c_str());
+
+			if (!scriptClassExists)
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.3f, 1.0f));
+
+			if(ImGui::InputText("Class Name", buffer, sizeof(buffer)))
+			{
+				component.Name = buffer;
+			}
+
+			if (!scriptClassExists)
+				ImGui::PopStyleColor();
+		});
+
 		DrawComponent<RigidBody2DComponent>("Rigidbody 2D", entity, [](auto& component) 
 		{
 			const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
@@ -391,6 +411,11 @@ namespace Nut {
 					m_SelectionContext.AddComponent<CircleCollider2DComponent>();
 					ImGui::CloseCurrentPopup();
 				}
+			}
+
+			if (ImGui::MenuItem("C# Script")) {
+				m_SelectionContext.AddComponent<ScriptComponent>();
+				ImGui::CloseCurrentPopup();
 			}
 
 			ImGui::EndPopup();

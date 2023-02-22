@@ -7,15 +7,22 @@
 #include "mono/metadata/assembly.h"
 #include "mono/metadata/image.h"
 #include "mono/metadata/object.h"
+#include "../Scene/Entity.h"
 
 namespace Nut {
 	
-
 	struct ScrptingEngineData {
 		MonoDomain* RootDomain;
 		MonoDomain* AppDomain;
 
 		MonoAssembly* CoreAssembly;
+
+		Scene* SceneContext;
+
+		Ref<ScriptClass> EntityCLass;
+
+		std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
+		std::vector<Ref<ScriptEntity>> EntityInstances;
 	};
 
 	static ScrptingEngineData* s_Data;
@@ -32,9 +39,24 @@ namespace Nut {
 		delete s_Data;
 	}
 
-	void Print(int value)
+	void ScriptEngine::OnRuntimeStart(Scene* scene)
 	{
-		std::cout << "C++ prints the value " << value << std::endl;
+		s_Data->SceneContext = scene;
+	}
+
+	void ScriptEngine::OnRuntimeUpdate(float ts)
+	{
+		for (auto e : s_Data->EntityInstances) {
+			e->OnUpdate(ts);
+		}
+	}
+
+	void ScriptEngine::OnRuntimeStop()
+	{
+		for (auto e : s_Data->EntityInstances) {
+			e->OnDestroy();
+		}
+		s_Data->EntityInstances.clear();
 	}
 
 	void ScriptEngine::InitMono()
@@ -56,16 +78,11 @@ namespace Nut {
 
 		auto assambly = LoadMonoAssembly("Assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll");
 		s_Data->CoreAssembly = assambly;
-		PrintAssemblyTypes(assambly);
 
-		
+		s_Data->EntityClasses.clear();
+		LoadEntityClasses(assambly);
 
-		auto instance = InstantiateClass(assambly, "Nut", "Main");
-		MonoMethod* method = mono_class_get_method_from_name(GetClassInAssembly(assambly, "Nut", "Main"), "PrintTest", 0);
-		MonoObject* exception = nullptr;
-		mono_runtime_invoke(method, instance, nullptr, &exception);
-
-
+		s_Data->EntityCLass = std::make_shared<ScriptClass>("Nut.Scene", "Entity");
 	}
 
 	void ScriptEngine::ShutdownMono()
@@ -74,11 +91,26 @@ namespace Nut {
 		delete s_Data->RootDomain;
 	}
 
+	std::unordered_map<std::string, Nut::Ref<Nut::ScriptClass>> ScriptEngine::GetEntityClasses()
+	{
+		return s_Data->EntityClasses;
+	}
 
+	Nut::Scene* ScriptEngine::GetCurrentScene()
+	{
+		return s_Data->SceneContext;
+	}
 
+	void ScriptEngine::OnCreateEntity(Entity entity)
+	{
+		const auto& sc = entity.GetComponent<ScriptComponent>();
+		void* id = &entity.GetComponent<IDComponent>().ID;
+		Ref<ScriptEntity> script = std::make_shared<ScriptEntity>(s_Data->EntityClasses[sc.Name], 1, &id);
+		s_Data->EntityInstances.push_back(script);
+		script->OnCreate();
+	}
 
-
-	// TODO: Implement proper FILE Api
+	// TODO: Implement proper FILE API
 	char* ReadBytes(const std::string& filepath, uint32_t* outSize)
 	{
 		std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
@@ -126,12 +158,14 @@ namespace Nut {
 		return assembly;
 	}
 
-	void ScriptEngine::PrintAssemblyTypes(MonoAssembly* assembly)
+	void ScriptEngine::LoadEntityClasses(MonoAssembly* assembly)
 	{
 		MonoImage* image = mono_assembly_get_image(assembly);
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-		
+
+		ScriptClass entityClass("Nut.Scene", "Entity");
+
 		NT_CORE_INFO("Mono Assambly Types:");
 		for (int32_t i = 0; i < numTypes; i++)
 		{
@@ -141,7 +175,15 @@ namespace Nut {
 			const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
 			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
 
-			NT_CORE_INFO("{0}.{1}", nameSpace, name);
+			ScriptClass klass(nameSpace, name);
+
+			if (mono_class_is_subclass_of(klass.GetClass(), entityClass.GetClass(), false) && std::string(name) != "Entity") {
+				std::string fullName = fmt::format("{}.{}", nameSpace, name);
+				s_Data->EntityClasses[fullName] = std::make_shared<ScriptClass>(nameSpace, name);
+				NT_CORE_INFO("{0}.{1}", nameSpace, name);
+			}
+
+			
 		}
 	}
 
@@ -181,25 +223,36 @@ namespace Nut {
 
 	ScriptClass::~ScriptClass()
 	{
-		mono_free(m_Class);
+		//mono_free(m_Class);
 	}
 
 	MonoMethod* ScriptClass::GetMethod(std::string methodName, uint32_t parameterCount) const
 	{
-		return mono_class_get_method_from_name(m_Class, methodName.c_str(), parameterCount);
+		MonoMethod* method = mono_class_get_method_from_name(m_Class, methodName.c_str(), parameterCount);
+		NT_CORE_ASSERT(method, "Failed to load method");
+		return method;
 	}
 	
-	ScriptObject::ScriptObject(const ScriptClass& klass)
+	ScriptObject::ScriptObject(const Ref<ScriptClass>& klass)
 		: m_Class(klass)
 	{
-		MonoObject* instance = mono_object_new(s_Data->AppDomain, m_Class.GetClass());
+		MonoObject* instance = mono_object_new(s_Data->AppDomain, m_Class->GetClass());
 		mono_runtime_object_init(instance);
 		m_Instance = instance;
 	}
 
+	ScriptObject::ScriptObject(const Ref<ScriptClass>& klass, int paramCount, void** params)
+		: m_Class(klass)
+	{
+		MonoObject* instance = mono_object_new(s_Data->AppDomain, m_Class->GetClass());
+		m_Instance = instance;
+		MonoObject* exc;
+		mono_runtime_invoke(s_Data->EntityCLass->GetMethod(".ctor", 1), m_Instance, params, &exc);
+	}
+
 	void ScriptObject::Invoke(std::string methodName, uint32_t parameterCount, void** params) const
 	{
-		MonoMethod* method = m_Class.GetMethod(methodName, parameterCount);
+		MonoMethod* method = m_Class->GetMethod(methodName, parameterCount);
 		MonoObject* exc;
 		mono_runtime_invoke(method, m_Instance, params, &exc);
 		// TODO: Handle exception
@@ -207,6 +260,53 @@ namespace Nut {
 
 	ScriptObject::~ScriptObject()
 	{
-		mono_free(m_Instance);
+		//mono_free(m_Instance);
 	}
+
+
+	ScriptEntity::ScriptEntity(const Ref<ScriptClass>& klass)
+		: ScriptObject(klass)
+	{
+		m_OnCreate = s_Data->EntityCLass->GetMethod("OnCreate", 0);
+		m_OnDestroy = s_Data->EntityCLass->GetMethod("OnDestroy", 0);
+		m_OnUpdate = s_Data->EntityCLass->GetMethod("OnUpdate", 1);
+
+		m_OnCreate = mono_object_get_virtual_method(m_Instance, m_OnCreate);
+		m_OnDestroy = mono_object_get_virtual_method(m_Instance, m_OnDestroy);
+		m_OnUpdate = mono_object_get_virtual_method(m_Instance, m_OnUpdate);
+	}
+
+	ScriptEntity::ScriptEntity(const Ref<ScriptClass>& klass, int paramCount, void** params)
+		: ScriptObject(klass, paramCount, params)
+	{
+		m_OnCreate = s_Data->EntityCLass->GetMethod("OnCreate", 0);
+		m_OnDestroy = s_Data->EntityCLass->GetMethod("OnDestroy", 0);
+		m_OnUpdate = s_Data->EntityCLass->GetMethod("OnUpdate", 1);
+
+		m_OnCreate = mono_object_get_virtual_method(m_Instance, m_OnCreate);
+		m_OnDestroy = mono_object_get_virtual_method(m_Instance, m_OnDestroy);
+		m_OnUpdate = mono_object_get_virtual_method(m_Instance, m_OnUpdate);
+	}
+
+	ScriptEntity::~ScriptEntity()
+	{
+
+	}
+
+	void ScriptEntity::OnCreate()
+	{
+		mono_runtime_invoke(m_OnCreate, m_Instance, nullptr, nullptr);
+	}
+
+	void ScriptEntity::OnDestroy()
+	{
+		mono_runtime_invoke(m_OnDestroy, m_Instance, nullptr, nullptr);
+	}
+
+	void ScriptEntity::OnUpdate(float ts)
+	{
+		void* timestep = &ts;
+		mono_runtime_invoke(m_OnUpdate, m_Instance, &timestep, nullptr);
+	}
+
 }

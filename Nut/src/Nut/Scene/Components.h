@@ -103,6 +103,14 @@ namespace Nut {
 		}
 	};
 
+	struct ScriptComponent {
+		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent&) = default;
+		ScriptComponent(std::string name) { Name = name; }
+
+		std::string Name;
+	};
+
 	struct RigidBody2DComponent {
 		enum class BodyType { Static = 0, Dynamic, Kinematic };
 		BodyType Type = BodyType::Static;

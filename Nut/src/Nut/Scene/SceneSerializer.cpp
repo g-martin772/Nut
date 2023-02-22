@@ -166,6 +166,17 @@ namespace Nut {
 			out << YAML::EndMap;
 		}
 
+		if (entity.HasComponent<ScriptComponent>()) {
+			out << YAML::Key << "ScriptComponent";
+			out << YAML::BeginMap;
+
+			auto& sc = entity.GetComponent<ScriptComponent>();
+
+			out << YAML::Key << "Name" << YAML::Value << sc.Name;
+
+			out << YAML::EndMap;
+		}
+
 		if (entity.HasComponent<CircleRendererComponent>()) {
 			out << YAML::Key << "CircleRendererComponent";
 			out << YAML::BeginMap;
@@ -320,6 +331,12 @@ namespace Nut {
 
 					cc.Primary = cameraComponent["Primary"].as<bool>();
 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
+				}
+
+				auto scriptComponent = entity["ScriptComponent"];
+				if (scriptComponent) {
+					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
+					sc.Name = scriptComponent["Name"].as<std::string>();
 				}
 
 				auto spriteRendererComponent = entity["SpriteRendererComponent"];

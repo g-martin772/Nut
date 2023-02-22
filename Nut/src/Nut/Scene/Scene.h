@@ -4,6 +4,7 @@
 
 #include "Nut/Core/Timestep.h"
 #include "Nut/Renderer/EditorCamera.h"
+#include "../Core/UUID.h"
 
 
 class b2World;
@@ -18,6 +19,7 @@ namespace Nut {
 
 		Entity CreateEntity(const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
+		Entity GetEntityByUUID(UUID uuid);
 
 		Entity GetPrimaryCameraEntity();
 
@@ -47,11 +49,16 @@ namespace Nut {
 		void OnPhysics2DStart();
 		void OnPhysics2DStop();
 
+		void OnScriptingStart();
+		void OnScriptingStop();
+
 		void RenderScene(EditorCamera& camera);
 	private:
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
+
+		std::unordered_map<UUID, entt::entity> m_EntityMap;
 
 		b2World* m_PhysicsWorld = nullptr;
 

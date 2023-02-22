@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Nut/Scene/Scene.h"
+
 extern "C" {
 	typedef struct _MonoClass MonoClass;
 	typedef struct _MonoAssembly MonoAssembly;
@@ -8,16 +10,27 @@ extern "C" {
 }
 
 namespace Nut {
+	class ScriptClass;
+
 	class ScriptEngine {
 	public:
 		static void Init();
 		static void Shutdown();
+
+		static void OnRuntimeStart(Scene* scene);
+		static void OnRuntimeUpdate(float ts);
+		static void OnRuntimeStop();
+
+		static std::unordered_map<std::string, Ref<ScriptClass>> GetEntityClasses();
+		static Scene* GetCurrentScene();
+
+		static void OnCreateEntity(Entity entity);
 	private:
 		static void InitMono();
 		static void ShutdownMono();
-	
+
 		static MonoAssembly* LoadMonoAssembly(const std::string& assemblyPath);
-		static void PrintAssemblyTypes(MonoAssembly* assembly);
+		static void LoadEntityClasses(MonoAssembly* assembly);
 
 		static MonoClass* GetClassInAssembly(MonoAssembly* assembly, const char* namespaceName, const char* className);
 		static MonoObject* InstantiateClass(MonoAssembly* assembly, const char* namespaceName, const char* className);
@@ -39,14 +52,31 @@ namespace Nut {
 
 	class ScriptObject {
 	public:
-		ScriptObject(const ScriptClass& klass);
-		~ScriptObject();
+		ScriptObject(const Ref<ScriptClass>& klass);
+		ScriptObject(const Ref<ScriptClass>& klass, int paramCount, void** params);
+		virtual ~ScriptObject();
 
-		inline const ScriptClass& GetClass() const { return m_Class; }
+		inline const Ref<ScriptClass>& GetClass() const { return m_Class; }
 
 		void Invoke(std::string methodName, uint32_t parameterCount, void** params) const;
-	private:
-		const ScriptClass& m_Class;
+	protected:
+		ScriptObject();
+		const Ref<ScriptClass>& m_Class;
 		MonoObject* m_Instance;
+	};
+
+	class ScriptEntity : public ScriptObject {
+	public:
+		ScriptEntity(const Ref<ScriptClass>& klass);
+		ScriptEntity(const Ref<ScriptClass>& klass, int paramCount, void** params);
+		~ScriptEntity();
+
+		void OnCreate();
+		void OnDestroy();
+		void OnUpdate(float ts);
+	private:
+		MonoMethod* m_OnCreate;
+		MonoMethod* m_OnDestroy;
+		MonoMethod* m_OnUpdate;
 	};
 }

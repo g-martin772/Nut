@@ -210,7 +210,7 @@ namespace Nut {
 
 
 			if (ImGui::BeginMenu("View")) {
-				if (ImGui::MenuItem("Toggle PhysicsCollider Visualisazion")) {
+				if (ImGui::MenuItem("Toggle PhysicsCollider Visualization")) {
 					m_ShowPhysicsColliders = !m_ShowPhysicsColliders;
 				};
 
@@ -222,7 +222,7 @@ namespace Nut {
 #endif
 
 		// ---------------------------------
-		//  Actual GUI inside the dockspace
+		//  Actual GUI inside the Dockspace
 		// ---------------------------------
 
 #if 1
