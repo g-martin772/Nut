@@ -1,12 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Nut.Math;
 
-namespace src.Scene
+using static Nut.InternalCalls;
+
+namespace Nut.Scene
 {
-    internal class Components
+    public abstract class Component
     {
+        public Entity Entity { get; internal set; }
     }
+
+    public class TransformComponent : Component
+    {
+        public Vector3 Translation
+        {
+            get
+            {
+                Native_Entity_GetTranslation(Entity.GetEntityID(), out Vector3 translation);
+                return translation;
+            }
+            set
+            {
+                Native_Entity_SetTranslation(Entity.GetEntityID(), ref value);
+            }
+        }
+
+        public void Move(Vector3 modifier)
+        {
+            Vector3 pos = Translation;
+            pos += modifier;
+            Translation = pos;
+        }
+
+        public Vector3 Scale
+        {
+            get
+            {
+                Native_Entity_GetTranslation(Entity.GetEntityID(), out Vector3 translation);
+                return translation;
+            }
+            set
+            {
+                Native_Entity_SetTranslation(Entity.GetEntityID(), ref value);
+            }
+        }
+
+        public Vector3 Rotation
+        {
+            get
+            {
+                Native_Entity_GetTranslation(Entity.GetEntityID(), out Vector3 translation);
+                return translation;
+            }
+            set
+            {
+                Native_Entity_SetTranslation(Entity.GetEntityID(), ref value);
+            }
+        }
+    }
+
 }

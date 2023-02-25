@@ -16,13 +16,14 @@ namespace Nut {
 		MonoDomain* AppDomain;
 
 		MonoAssembly* CoreAssembly;
+		MonoImage* CoreAssemblyImage;
 
 		Scene* SceneContext;
 
 		Ref<ScriptClass> EntityCLass;
 
 		std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
-		std::vector<Ref<ScriptEntity>> EntityInstances;
+		std::unordered_map<UUID, Ref<ScriptEntity>> EntityInstances;
 	};
 
 	static ScrptingEngineData* s_Data;
@@ -46,16 +47,11 @@ namespace Nut {
 
 	void ScriptEngine::OnRuntimeUpdate(float ts)
 	{
-		for (auto e : s_Data->EntityInstances) {
-			e->OnUpdate(ts);
-		}
+		
 	}
 
 	void ScriptEngine::OnRuntimeStop()
 	{
-		for (auto e : s_Data->EntityInstances) {
-			e->OnDestroy();
-		}
 		s_Data->EntityInstances.clear();
 	}
 
@@ -74,10 +70,12 @@ namespace Nut {
 		s_Data->AppDomain = mono_domain_create_appdomain("NutAppDomain", nullptr);
 		mono_domain_set(s_Data->AppDomain, true);
 
-		ScriptApi::RegisterInternalCalls();
-
 		auto assambly = LoadMonoAssembly("Assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll");
 		s_Data->CoreAssembly = assambly;
+		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
+		
+		ScriptApi::RegisterComponents();
+		ScriptApi::RegisterInternalCalls();
 
 		s_Data->EntityClasses.clear();
 		LoadEntityClasses(assambly);
@@ -101,13 +99,39 @@ namespace Nut {
 		return s_Data->SceneContext;
 	}
 
+	MonoImage* ScriptEngine::GetCoreAssemblyImage()
+	{
+		return s_Data->CoreAssemblyImage;
+	}
+
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
 		const auto& sc = entity.GetComponent<ScriptComponent>();
-		void* id = &entity.GetComponent<IDComponent>().ID;
-		Ref<ScriptEntity> script = std::make_shared<ScriptEntity>(s_Data->EntityClasses[sc.Name], 1, &id);
-		s_Data->EntityInstances.push_back(script);
-		script->OnCreate();
+		if (EntityClassExists(sc.Name)) 
+		{
+			void* id = &entity.GetComponent<IDComponent>().ID;
+			Ref<ScriptEntity> script = std::make_shared<ScriptEntity>(s_Data->EntityClasses[sc.Name], 1, &id);
+			s_Data->EntityInstances[*(UUID*)id] = script;
+			script->OnCreate();
+		}
+	}
+
+	void ScriptEngine::OnUpdateEntity(Entity entity, Timestep ts)
+	{
+		UUID id = entity.GetComponent<IDComponent>().ID;
+		NT_CORE_ASSERT(s_Data->EntityInstances.find(id) != s_Data->EntityInstances.end(), "Script not found");
+			
+		Ref<ScriptEntity> script = s_Data->EntityInstances[id];
+		script->OnUpdate(ts);
+	}
+
+	void ScriptEngine::OnDestroyEntity(Entity entity)
+	{
+		UUID id = entity.GetComponent<IDComponent>().ID;
+		NT_CORE_ASSERT(s_Data->EntityInstances.find(id) != s_Data->EntityInstances.end(), "Script not found");
+
+		Ref<ScriptEntity> script = s_Data->EntityInstances[id];
+		script->OnDestroy();
 	}
 
 	// TODO: Implement proper FILE API
@@ -166,7 +190,7 @@ namespace Nut {
 
 		ScriptClass entityClass("Nut.Scene", "Entity");
 
-		NT_CORE_INFO("Mono Assambly Types:");
+		NT_CORE_INFO("Script Classes found and loaded:");
 		for (int32_t i = 0; i < numTypes; i++)
 		{
 			uint32_t cols[MONO_TYPEDEF_SIZE];
@@ -180,7 +204,7 @@ namespace Nut {
 			if (mono_class_is_subclass_of(klass.GetClass(), entityClass.GetClass(), false) && std::string(name) != "Entity") {
 				std::string fullName = fmt::format("{}.{}", nameSpace, name);
 				s_Data->EntityClasses[fullName] = std::make_shared<ScriptClass>(nameSpace, name);
-				NT_CORE_INFO("{0}.{1}", nameSpace, name);
+				NT_CORE_INFO("\t{0}.{1}", nameSpace, name);
 			}
 
 			
@@ -210,6 +234,11 @@ namespace Nut {
 		// Call the parameterless (default) constructor
 		mono_runtime_object_init(classInstance);
 		return classInstance;
+	}
+
+	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
+	{
+		return s_Data->EntityClasses.find(fullClassName) != s_Data->EntityClasses.end();
 	}
 
 	ScriptClass::ScriptClass(std::string namespaceName, std::string className)

@@ -5,11 +5,17 @@ using System.Runtime.CompilerServices;
 
 namespace Nut
 {
-    internal static class NativeCalls
+    internal static class InternalCalls
     {
         #region Console
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void Native_Print(string text);
+        #endregion
+
+
+        #region Entity
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool Native_Entity_HasComponent(UInt64 entityID, Type componentType);
         #endregion
 
 

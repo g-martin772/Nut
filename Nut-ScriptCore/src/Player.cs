@@ -1,25 +1,28 @@
 ﻿using Nut.Input;
 using Nut.Math;
 using Nut.Scene;
-using static Nut.NativeCalls;
+using static Nut.InternalCalls;
 
 namespace Sandbox
 {
     public class Player : Entity
     {
         float speed;
+        TransformComponent tc;
 
         public override void OnCreate()
         {
-            speed = 10.0f;
             Native_Print($"OnPlayerCreate");
+
+            speed = 10.0f;
+            tc = GetComponent<TransformComponent>();
         }
 
         public override void OnUpdate(float ts)
         {
             //Native_Print($"OnPlayerUpdate: {ts}");
 
-            Vector3 pos = Translation;
+            Vector3 pos = tc.Translation;
             
             if(Input.IsKeyDown(KeyCode.KEY_W))
             {
@@ -39,7 +42,7 @@ namespace Sandbox
                 pos.X += speed * ts;
             }
 
-            Translation = pos;
+            tc.Translation = pos;
         }
     }
 }

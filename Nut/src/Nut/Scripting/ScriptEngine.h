@@ -7,6 +7,7 @@ extern "C" {
 	typedef struct _MonoAssembly MonoAssembly;
 	typedef struct _MonoObject MonoObject;
 	typedef struct _MonoMethod MonoMethod;
+	typedef struct _MonoImage MonoImage;
 }
 
 namespace Nut {
@@ -21,10 +22,14 @@ namespace Nut {
 		static void OnRuntimeUpdate(float ts);
 		static void OnRuntimeStop();
 
+		static bool ScriptEngine::EntityClassExists(const std::string& fullClassName);
 		static std::unordered_map<std::string, Ref<ScriptClass>> GetEntityClasses();
 		static Scene* GetCurrentScene();
+		static MonoImage* GetCoreAssemblyImage();
 
 		static void OnCreateEntity(Entity entity);
+		static void OnUpdateEntity(Entity entity, Timestep ts);
+		static void OnDestroyEntity(Entity entity);
 	private:
 		static void InitMono();
 		static void ShutdownMono();
@@ -35,6 +40,8 @@ namespace Nut {
 		static MonoClass* GetClassInAssembly(MonoAssembly* assembly, const char* namespaceName, const char* className);
 		static MonoObject* InstantiateClass(MonoAssembly* assembly, const char* namespaceName, const char* className);
 	};
+
+
 
 	class ScriptClass {
 	public:
@@ -50,6 +57,8 @@ namespace Nut {
 		MonoClass* m_Class;
 	};
 
+
+
 	class ScriptObject {
 	public:
 		ScriptObject(const Ref<ScriptClass>& klass);
@@ -64,6 +73,8 @@ namespace Nut {
 		const Ref<ScriptClass>& m_Class;
 		MonoObject* m_Instance;
 	};
+
+
 
 	class ScriptEntity : public ScriptObject {
 	public:

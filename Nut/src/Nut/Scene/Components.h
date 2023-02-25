@@ -45,7 +45,8 @@ namespace Nut {
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const glm::mat4& transform) : Transform(transform) {}
 
-		glm::mat4 GetTransform() {
+		glm::mat4 GetTransform()
+		{
 			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 
 			return glm::translate(glm::mat4(1.0f), Translation) * rotation * glm::scale(glm::mat4(1.0f), Scalation);;
@@ -88,8 +89,7 @@ namespace Nut {
 
 	class ScriptableEntity;
 
-	struct NativeScriptComponent
-	{
+	struct NativeScriptComponent {
 		ScriptableEntity* Instance = nullptr;
 
 		ScriptableEntity* (*InstantiateFunction)();
@@ -151,4 +151,15 @@ namespace Nut {
 		CircleCollider2DComponent() = default;
 		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
 	};
+
+
+	template<typename... Component>
+	struct ComponentGroup {
+	};
+
+	using AllComponents =
+		ComponentGroup<TransformComponent, SpriteRendererComponent,
+		CircleRendererComponent, CameraComponent, ScriptComponent,
+		NativeScriptComponent, RigidBody2DComponent, BoxCollider2DComponent,
+		CircleCollider2DComponent>;
 }

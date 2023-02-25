@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-using static Nut.NativeCalls;
+using static Nut.InternalCalls;
 
 namespace Nut
 {

@@ -5,5 +5,6 @@ namespace Nut {
 	class ScriptApi {
 	public:
 		static void RegisterInternalCalls();
+		static void RegisterComponents();
 	};
 }

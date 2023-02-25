@@ -1,6 +1,6 @@
 ﻿using Nut.Math;
 using System;
-using static Nut.NativeCalls;
+using static Nut.InternalCalls;
 
 namespace Nut.Scene
 {
@@ -17,12 +17,18 @@ namespace Nut.Scene
 
         public virtual void OnUpdate(float ts) { }
 
-        public UInt64 GetEntityID() { return id; } 
+        public UInt64 GetEntityID() { return id; }
 
-        public Vector3 Translation
+        public bool HasComponent<T>() where T : Component
         {
-            get { Native_Entity_GetTranslation(id, out Vector3 translation); return translation; }
-            set => Native_Entity_SetTranslation(id, ref value);
+            return Native_Entity_HasComponent(id, typeof(T));
+        }
+
+        public T GetComponent<T>() where T : Component, new()
+        {
+            if(!HasComponent<T>())
+                return null; // Or throw exception maybe?
+            return new T() { Entity = this };
         }
     }
 }

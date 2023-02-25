@@ -17,13 +17,14 @@
 
 namespace Nut {
 
-	static b2BodyType NutRB2DTypeToBox2D(RigidBody2DComponent::BodyType bodytype) {
+	static b2BodyType NutRB2DTypeToBox2D(RigidBody2DComponent::BodyType bodytype)
+	{
 		switch (bodytype) {
 		case RigidBody2DComponent::BodyType::Static:	return b2_staticBody;
 		case RigidBody2DComponent::BodyType::Dynamic:	return b2_dynamicBody;
 		case RigidBody2DComponent::BodyType::Kinematic:	return b2_kinematicBody;
 		}
-		
+
 		NT_CORE_ASSERT(false, "Unknow body type");
 		return b2_staticBody;
 	}
@@ -104,18 +105,26 @@ namespace Nut {
 	void Scene::OnUpdateRuntime(Timestep ts)
 	{
 		// Update scripts
-		ScriptEngine::OnRuntimeUpdate(ts);
+		{
+			ScriptEngine::OnRuntimeUpdate(ts);
 
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc) {
-			if (!nsc.Instance)
-			{
-				nsc.Instance = nsc.InstantiateFunction();
-				nsc.Instance->m_Entity = Entity{ entity, this };
-				nsc.Instance->OnCreate();
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto e : view) {
+				Entity entity = { e, this };
+				ScriptEngine::OnUpdateEntity(entity, ts);
 			}
 
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc) {
+				if (!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateFunction();
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				}
+
 			nsc.Instance->OnUpdate(ts);
-		});
+				});
+		}
 
 		// Physics
 		{
@@ -138,40 +147,41 @@ namespace Nut {
 		}
 
 		// Render 2D
-		Camera* mainCamera;
-		glm::mat4 cameraTransform;
-
-		auto view = m_Registry.view<TransformComponent, CameraComponent>();
-		for (auto entity : view)
 		{
-			auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+			Camera* mainCamera;
+			glm::mat4 cameraTransform;
 
-			if (camera.Primary)
+			auto view = m_Registry.view<TransformComponent, CameraComponent>();
+			for (auto entity : view)
 			{
-				mainCamera = &camera.Camera;
-				cameraTransform = transform.GetTransform();
-				break;
+				auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+
+				if (camera.Primary)
+				{
+					mainCamera = &camera.Camera;
+					cameraTransform = transform.GetTransform();
+					break;
+				}
 			}
+
+
+			Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
+
+			auto sprites = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+			for (auto entity : sprites)
+			{
+				auto [transform, sprite] = sprites.get<TransformComponent, SpriteRendererComponent>(entity);
+				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+			}
+
+			auto circles = m_Registry.view<TransformComponent, CircleRendererComponent>();
+			for (auto entity : circles) {
+				auto [transform, circle] = circles.get<TransformComponent, CircleRendererComponent>(entity);
+				Renderer2D::DrawCircle(transform.GetTransform(), circle, (int)entity);
+			}
+
+			Renderer2D::EndScene();
 		}
-
-
-		Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
-
-		auto sprites = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		for (auto entity : sprites)
-		{
-			auto [transform, sprite] = sprites.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-		}
-
-		auto circles = m_Registry.view<TransformComponent, CircleRendererComponent>();
-		for (auto entity : circles) {
-			auto [transform, circle] = circles.get<TransformComponent, CircleRendererComponent>(entity);
-			Renderer2D::DrawCircle(transform.GetTransform(), circle, (int)entity);
-		}
-
-		Renderer2D::EndScene();
-
 	}
 
 	void Scene::OnUpdateSimulation(Timestep ts, EditorCamera& camera)
@@ -314,26 +324,42 @@ namespace Nut {
 		Renderer2D::EndScene();
 	}
 
-	template<typename Component>
+	template<typename... Component>
 	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
-		auto view = src.view<Component>();
-		for (auto e : view)
-		{
-			UUID uuid = src.get<IDComponent>(e).ID;
-			NT_CORE_ASSERT(enttMap.find(uuid) != enttMap.end(), "");
-			entt::entity dstEnttID = enttMap.at(uuid);
+		([&]() {
+			auto view = src.view<Component>();
+			for (auto e : view)
+			{
+				UUID uuid = src.get<IDComponent>(e).ID;
+				NT_CORE_ASSERT(enttMap.find(uuid) != enttMap.end(), "");
+				entt::entity dstEnttID = enttMap.at(uuid);
 
-			auto& component = src.get<Component>(e);
-			dst.emplace_or_replace<Component>(dstEnttID, component);
-		}
+				auto& component = src.get<Component>(e);
+				dst.emplace_or_replace<Component>(dstEnttID, component);
+			}
+		}(), ...);
 	}
 
-	template<typename Component>
+	template<typename... Component>
+	static void CopyComponent(ComponentGroup<Component...>,entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
+	{
+		CopyComponent<Component...>(dst, src, enttMap);
+	}
+
+	template<typename... Component>
 	static void CopyComponentIfExists(Entity dst, Entity src)
 	{
-		if (src.HasComponent<Component>())
+		([&]() {
+			if (src.HasComponent<Component>())
 			dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+		}(), ...);
+	}
+
+	template<typename... Component>
+	static void CopyComponentIfExists(ComponentGroup<Component...>, Entity dst, Entity src)
+	{
+		CopyComponentIfExists<Component...>(dst, src);
 	}
 
 	Ref<Scene> Scene::Copy(Ref<Scene> other)
@@ -359,15 +385,7 @@ namespace Nut {
 		}
 
 		// Copy components (except IDComponent and TagComponent)
-		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<SpriteRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<RigidBody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<CircleRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<CircleCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<ScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		newScene->m_EntityMap = enttMap;
 
@@ -379,15 +397,7 @@ namespace Nut {
 		std::string name = entity.GetComponent<TagComponent>().Tag;
 		Entity newEntity = CreateEntity(name);
 
-		CopyComponentIfExists<TransformComponent>(newEntity, entity);
-		CopyComponentIfExists<SpriteRendererComponent>(newEntity, entity);
-		CopyComponentIfExists<CameraComponent>(newEntity, entity);
-		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
-		CopyComponentIfExists<RigidBody2DComponent>(newEntity, entity);
-		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
-		CopyComponentIfExists<CircleRendererComponent>(newEntity, entity);
-		CopyComponentIfExists<CircleCollider2DComponent>(newEntity, entity);
-		CopyComponentIfExists<ScriptComponent>(newEntity, entity);
+		CopyComponentIfExists(AllComponents{}, newEntity, entity);
 	}
 
 	template<typename T>
