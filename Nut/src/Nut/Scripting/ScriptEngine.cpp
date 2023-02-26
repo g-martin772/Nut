@@ -206,8 +206,6 @@ namespace Nut {
 				s_Data->EntityClasses[fullName] = std::make_shared<ScriptClass>(nameSpace, name);
 				NT_CORE_INFO("\t{0}.{1}", nameSpace, name);
 			}
-
-			
 		}
 	}
 
@@ -244,8 +242,7 @@ namespace Nut {
 	ScriptClass::ScriptClass(std::string namespaceName, std::string className)
 		: m_Name(className), m_Namespace(namespaceName)
 	{
-		MonoImage* image = mono_assembly_get_image(s_Data->CoreAssembly);
-		MonoClass* klass = mono_class_from_name(image, namespaceName.c_str(), className.c_str());
+		MonoClass* klass = mono_class_from_name(s_Data->CoreAssemblyImage, namespaceName.c_str(), className.c_str());
 		NT_CORE_ASSERT(klass, "Failed to load class");
 		m_Class = klass;
 	}

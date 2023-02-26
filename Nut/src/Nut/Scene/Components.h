@@ -45,7 +45,7 @@ namespace Nut {
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const glm::mat4& transform) : Transform(transform) {}
 
-		glm::mat4 GetTransform()
+		glm::mat4 GetTransform() const
 		{
 			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 

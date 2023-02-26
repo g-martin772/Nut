@@ -58,6 +58,7 @@ project "Nut"
 		"%{Library.WinMM}",
 		"%{Library.WinVersion}",
 		"%{Library.BCrypt}",
+        "Nut-ScriptCore",
     }
 
     filter "files:vendor/ImGuizmo/**.cpp"

@@ -276,7 +276,7 @@ namespace Nut {
 		// -------------
 #if 1 
 		Entity selectedEntity = m_SceneHierachyPanel.GetSelectedEntity();
-		if (selectedEntity && m_GuizmoType != -1) {
+		if (selectedEntity && m_GuizmoType != -1 && m_SceneState == SceneState::Edit) {
 			//Cam
 			const glm::mat4& camProj = m_EditorCamera.GetProjection();
 			glm::mat4 camView = m_EditorCamera.GetViewMatrix();

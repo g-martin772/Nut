@@ -9,6 +9,7 @@
 #include "Nut/Scene/Entity.h"
 #include "Nut/Core/Input.h"
 #include "mono/metadata/reflection.h"
+#include "box2d/b2_body.h"
 
 namespace Nut {
 
@@ -16,10 +17,17 @@ namespace Nut {
 	#define NT_ADD_INTERNAL_CALL(name) mono_add_internal_call("Nut.InternalCalls::Native_" #name "", name);
 
 	#pragma region Console
-	static void Print(MonoString* text)
+	static void Print(MonoString* text, int level)
 	{
 		std::string textString = mono_string_to_utf8(text);
-		NT_SCRIPT_TRACE("{0}", textString);
+		switch (level)
+		{
+			case 1: NT_SCRIPT_TRACE("{0}", textString);	break;
+			case 2: NT_SCRIPT_INFO("{0}", textString);	break;
+			case 3:	NT_SCRIPT_WARN("{0}", textString);	break;
+			case 4: NT_SCRIPT_ERROR("{0}", textString);	break;
+			case 5: NT_SCRIPT_FATAL("{0}", textString);	break;
+		}
 	}
 	#pragma endregion
 
@@ -37,17 +45,58 @@ namespace Nut {
 
 
 	#pragma region Basic Components
-	static void Entity_GetTranslation(UUID entityID, glm::vec3* translation)
+	static void TransformComponent_GetTranslation(UUID entityID, glm::vec3* translation)
 	{
 		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
 		*translation = entity.GetComponent<TransformComponent>().Translation;
 	}
 
-	static void Entity_SetTranslation(UUID entityID, glm::vec3* translation)
+	static void TransformComponent_SetTranslation(UUID entityID, glm::vec3* translation)
 	{
 		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
 		auto& tc = entity.GetComponent<TransformComponent>();
 		tc.Translation = *translation;
+	}
+
+	static void TransformComponent_GetRotation(UUID entityID, glm::vec3* rotation)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		*rotation = entity.GetComponent<TransformComponent>().Rotation;
+	}
+
+	static void TransformComponent_SetRotation(UUID entityID, glm::vec3* rotation)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& tc = entity.GetComponent<TransformComponent>();
+		tc.Rotation = *rotation;
+	}
+
+	static void TransformComponent_GetScale(UUID entityID, glm::vec3* scale)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		*scale = entity.GetComponent<TransformComponent>().Scalation;
+	}
+
+	static void TransformComponent_SetScale(UUID entityID, glm::vec3* scale)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& tc = entity.GetComponent<TransformComponent>();
+		tc.Scalation = *scale;
+	}
+
+
+
+	static void SpriteRenderComponent_GetColor(UUID entityID, glm::vec4* color)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		*color = entity.GetComponent<SpriteRendererComponent>().Color;
+	}
+
+	static void SpriteRenderComponent_SetColor(UUID entityID, glm::vec4* color)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& src = entity.GetComponent<SpriteRendererComponent>();
+		src.Color = *color;
 	}
 	#pragma endregion
 
@@ -60,6 +109,21 @@ namespace Nut {
 	#pragma endregion
 
 
+	#pragma region Physics2D
+	static void RigidBody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2* impulse, glm::vec2* pos, bool wake)
+	{
+		RigidBody2DComponent rb2d = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID).GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+		body->ApplyLinearImpulse(b2Vec2(impulse->x, impulse->y), b2Vec2(pos->x, pos->y), wake);
+	}
+
+	static void RigidBody2DComponent_ApplyLinearImpulseCenter(UUID entityID, glm::vec2* impulse, bool wake)
+	{
+		RigidBody2DComponent rb2d = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID).GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+	}
+	#pragma endregion
 
 	template<typename... Component>
 	static void RegisterComponent()
@@ -98,8 +162,18 @@ namespace Nut {
 
 		NT_ADD_INTERNAL_CALL(Entity_HasComponent);
 
-		NT_ADD_INTERNAL_CALL(Entity_GetTranslation);
-		NT_ADD_INTERNAL_CALL(Entity_SetTranslation);
+		NT_ADD_INTERNAL_CALL(TransformComponent_GetTranslation);
+		NT_ADD_INTERNAL_CALL(TransformComponent_SetTranslation);
+		NT_ADD_INTERNAL_CALL(TransformComponent_GetRotation);
+		NT_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
+		NT_ADD_INTERNAL_CALL(TransformComponent_GetScale);
+		NT_ADD_INTERNAL_CALL(TransformComponent_SetScale);
+
+		NT_ADD_INTERNAL_CALL(SpriteRenderComponent_GetColor);
+		NT_ADD_INTERNAL_CALL(SpriteRenderComponent_SetColor);
+
+		NT_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
+		NT_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseCenter);
 
 		NT_ADD_INTERNAL_CALL(IsKeyDown);
 	}
