@@ -1,13 +1,17 @@
-project "Nut-ScriptCore"
+project "Sandbox"
     kind "SharedLib"
     language "C#"
 	dotnetframework "4.7.2"
 
-    targetdir ("../Nero/Assets/Scripts/%{prj.name}")
-    objdir ("../Nero/Assets/Scripts/int/%{prj.name}")
+    targetdir ("%{wks.location}/bin/%{prj.name}")
+    objdir ("%{wks.location}/int/%{prj.name}")
 
     files {
         "src/**.cs",
+    }
+
+    links {
+        "../../../../Nero/assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll"
     }
 
 	filter "configurations:Debug"

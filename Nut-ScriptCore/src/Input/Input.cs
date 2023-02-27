@@ -2,6 +2,6 @@
 {
     public static class Input
     {
-        public static bool IsKeyDown(KeyCode keyCode) { return InternalCalls.Native_IsKeyDown(keyCode); }
+        public static bool IsKeyDown(Key keyCode) { return InternalCalls.Native_IsKeyDown(keyCode); }
     }
 }

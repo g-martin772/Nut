@@ -12,13 +12,16 @@
 namespace Nut {
 	
 	struct ScrptingEngineData {
-		MonoDomain* RootDomain;
-		MonoDomain* AppDomain;
+		MonoDomain* RootDomain = nullptr;
+		MonoDomain* AppDomain = nullptr;
 
-		MonoAssembly* CoreAssembly;
-		MonoImage* CoreAssemblyImage;
+		MonoAssembly* CoreAssembly = nullptr;
+		MonoImage* CoreAssemblyImage = nullptr;
 
-		Scene* SceneContext;
+		MonoAssembly* GameAssembly = nullptr;
+		MonoImage* GameAssemblyImage = nullptr;
+
+		Scene* SceneContext = nullptr;
 
 		Ref<ScriptClass> EntityCLass;
 
@@ -70,15 +73,17 @@ namespace Nut {
 		s_Data->AppDomain = mono_domain_create_appdomain("NutAppDomain", nullptr);
 		mono_domain_set(s_Data->AppDomain, true);
 
-		auto assambly = LoadMonoAssembly("Assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll");
-		s_Data->CoreAssembly = assambly;
+		s_Data->CoreAssembly = LoadMonoAssembly("Assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll");
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
+
+		s_Data->GameAssembly = LoadMonoAssembly("resources/SandboxProject/bin/Sandbox/Sandbox.dll");
+		s_Data->GameAssemblyImage = mono_assembly_get_image(s_Data->GameAssembly);
 		
 		ScriptApi::RegisterComponents();
 		ScriptApi::RegisterInternalCalls();
 
 		s_Data->EntityClasses.clear();
-		LoadEntityClasses(assambly);
+		LoadEntityClasses(s_Data->GameAssembly);
 
 		s_Data->EntityCLass = std::make_shared<ScriptClass>("Nut.Scene", "Entity");
 	}
@@ -243,6 +248,10 @@ namespace Nut {
 		: m_Name(className), m_Namespace(namespaceName)
 	{
 		MonoClass* klass = mono_class_from_name(s_Data->CoreAssemblyImage, namespaceName.c_str(), className.c_str());
+		
+		if(!klass)
+			klass = mono_class_from_name(s_Data->GameAssemblyImage, namespaceName.c_str(), className.c_str());
+		
 		NT_CORE_ASSERT(klass, "Failed to load class");
 		m_Class = klass;
 	}

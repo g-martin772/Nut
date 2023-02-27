@@ -6,7 +6,7 @@ workspace "Nut"
 
     configurations {
         "Debug",
-        "Resease",
+        "Release",
         "Dist"
     }
 
@@ -22,3 +22,5 @@ include "Nut"
 include "Nut-ScriptCore"
 include "Nero"
 include "Sandbox"
+
+include "Nero/resources/SandboxProject"

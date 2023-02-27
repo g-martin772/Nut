@@ -98,6 +98,59 @@ namespace Nut {
 		auto& src = entity.GetComponent<SpriteRendererComponent>();
 		src.Color = *color;
 	}
+
+
+	static void CircleRenderComponent_GetColor(UUID entityID, glm::vec4* color)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		*color = entity.GetComponent<CircleRendererComponent>().Color;
+	}
+
+	static void CircleRenderComponent_SetColor(UUID entityID, glm::vec4* color)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& crc = entity.GetComponent<CircleRendererComponent>();
+		crc.Color = *color;
+	}
+
+	static float CircleRenderComponent_GetFade(UUID entityID)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		return entity.GetComponent<CircleRendererComponent>().Fade;
+	}
+
+	static void CircleRenderComponent_SetFade(UUID entityID, float fade)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& bc = entity.GetComponent<CircleRendererComponent>();
+		bc.Fade = fade;
+	}
+
+	static float CircleRenderComponent_GetRadius(UUID entityID)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		return entity.GetComponent<CircleRendererComponent>().Radius;
+	}
+
+	static void CircleRenderComponent_SetRadius(UUID entityID, float radius)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& bc = entity.GetComponent<CircleRendererComponent>();
+		bc.Radius = radius;
+	}
+
+	static float CircleRenderComponent_GetThickness(UUID entityID)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		return entity.GetComponent<CircleRendererComponent>().Thickness;
+	}
+
+	static void CircleRenderComponent_SetThickness(UUID entityID, float thickness)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& bc = entity.GetComponent<CircleRendererComponent>();
+		bc.Thickness = thickness;
+	}
 	#pragma endregion
 
 
@@ -122,6 +175,105 @@ namespace Nut {
 		RigidBody2DComponent rb2d = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID).GetComponent<RigidBody2DComponent>();
 		b2Body* body = (b2Body*)rb2d.RuntimeBody;
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+	}
+
+	static void RigidBody2DComponent_ApplyForce(UUID entityID, glm::vec2* impulse, glm::vec2* pos, bool wake)
+	{
+		RigidBody2DComponent rb2d = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID).GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+		body->ApplyForce(b2Vec2(impulse->x, impulse->y), b2Vec2(pos->x, pos->y), wake);
+	}
+
+	static void RigidBody2DComponent_ApplyForceCenter(UUID entityID, glm::vec2* impulse, bool wake)
+	{
+		RigidBody2DComponent rb2d = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID).GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+		body->ApplyForceToCenter(b2Vec2(impulse->x, impulse->y), wake);
+	}
+
+	static void RigidBody2DComponent_ApplyTorque(UUID entityID, float torque, bool wake)
+	{
+		RigidBody2DComponent rb2d = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID).GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+		body->ApplyTorque(torque, wake);
+	}
+
+	static void BoxCollider2DComponent_GetSize(UUID entityID, glm::vec2* size)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		*size = entity.GetComponent<BoxCollider2DComponent>().Size;
+	}
+
+	static void BoxCollider2DComponent_SetSize(UUID entityID, glm::vec2* size)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& bc = entity.GetComponent<BoxCollider2DComponent>();
+		bc.Size = *size;
+	}
+
+	static void BoxCollider2DComponent_GetOffset(UUID entityID, glm::vec2* offset)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		*offset = entity.GetComponent<BoxCollider2DComponent>().Offset;
+	}
+
+	static void BoxCollider2DComponent_SetOffset(UUID entityID, glm::vec2* offset)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& bc = entity.GetComponent<BoxCollider2DComponent>();
+		bc.Offset = *offset;
+	}
+
+	static float BoxCollider2DComponent_GetDensity(UUID entityID)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		return entity.GetComponent<BoxCollider2DComponent>().Density;
+	}
+
+	static void BoxCollider2DComponent_SetDensity(UUID entityID, float density)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& bc = entity.GetComponent<BoxCollider2DComponent>();
+		bc.Density = density;
+	}
+
+	static float BoxCollider2DComponent_GetFriction(UUID entityID)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		return entity.GetComponent<BoxCollider2DComponent>().Friction;
+	}
+
+	static void BoxCollider2DComponent_SetFriction(UUID entityID, float friction)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& bc = entity.GetComponent<BoxCollider2DComponent>();
+		bc.Friction = friction;
+	}
+
+	static float BoxCollider2DComponent_GetRestitution(UUID entityID)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		return entity.GetComponent<BoxCollider2DComponent>().Restitution;
+	}
+
+	static void BoxCollider2DComponent_SetRestitution(UUID entityID, float restitution)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& bc = entity.GetComponent<BoxCollider2DComponent>();
+		bc.Restitution = restitution;
+	}
+
+	static float BoxCollider2DComponent_GetRestitutionThreshold(UUID entityID)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		return entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
+	}
+
+	static void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityID, float restitutionThreshold)
+	{
+		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		auto& bc = entity.GetComponent<BoxCollider2DComponent>();
+		bc.RestitutionThreshold = restitutionThreshold;
 	}
 	#pragma endregion
 
@@ -172,8 +324,31 @@ namespace Nut {
 		NT_ADD_INTERNAL_CALL(SpriteRenderComponent_GetColor);
 		NT_ADD_INTERNAL_CALL(SpriteRenderComponent_SetColor);
 
+		NT_ADD_INTERNAL_CALL(CircleRenderComponent_GetColor);
+		NT_ADD_INTERNAL_CALL(CircleRenderComponent_SetColor);
+		NT_ADD_INTERNAL_CALL(CircleRenderComponent_GetRadius);
+		NT_ADD_INTERNAL_CALL(CircleRenderComponent_SetRadius);
+		NT_ADD_INTERNAL_CALL(CircleRenderComponent_GetFade);
+		NT_ADD_INTERNAL_CALL(CircleRenderComponent_SetFade);
+		NT_ADD_INTERNAL_CALL(CircleRenderComponent_GetThickness);
+		NT_ADD_INTERNAL_CALL(CircleRenderComponent_SetThickness);
+
 		NT_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
 		NT_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseCenter);
+		NT_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);
+		NT_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForceCenter);
+		NT_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyTorque);
+
+		NT_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetOffset);
+		NT_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetOffset);
+		NT_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetSize);
+		NT_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetSize);
+		NT_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetDensity);
+		NT_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetDensity);
+		NT_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetRestitution);
+		NT_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetRestitution);
+		NT_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetRestitutionThreshold);
+		NT_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetRestitutionThreshold);
 
 		NT_ADD_INTERNAL_CALL(IsKeyDown);
 	}
