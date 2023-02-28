@@ -7,12 +7,12 @@ namespace Sandbox
 {
     public class Player1 : Entity
     {
-        float speed;
-        RigidBody2DComponent rb;
+        public float speed;
+        public RigidBody2DComponent rb;
 
         public override void OnCreate()
         {
-            speed = 1000;
+            speed = 10;
             rb = GetComponent<RigidBody2DComponent>();
         }
 
@@ -31,18 +31,18 @@ namespace Sandbox
                 velocity.X += speed;
 
             velocity *= ts;
-            rb.ApplyForce(velocity);
+            rb.ApplyLinearImpulse(velocity);
         }
     }
 
     public class Player2 : Entity
     {
-        float speed;
-        RigidBody2DComponent rb;
+        public float speed;
+        public RigidBody2DComponent rb;
 
         public override void OnCreate()
         {
-            speed = 1000;
+            speed = 10;
             rb = GetComponent<RigidBody2DComponent>();
         }
 
@@ -61,7 +61,7 @@ namespace Sandbox
                 velocity.X += speed;
 
             velocity *= ts;
-            rb.ApplyForce(velocity);
+            rb.ApplyLinearImpulse(velocity);
         }
     }
 }

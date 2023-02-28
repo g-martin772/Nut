@@ -302,7 +302,7 @@ namespace Nut {
 			ImGui::DragFloat("Thickness", &component.Thickness, 0.1f, 0.0f, 1.0f);
 		});
 
-		DrawComponent<ScriptComponent>("Script Component (C#)", entity, [](auto& component) 
+		DrawComponent<ScriptComponent>("Script Component (C#)", entity, [entity](auto& component) mutable
 		{
 			const auto& entityClasses = ScriptEngine::GetEntityClasses();
 			bool scriptClassExists = entityClasses.find(component.Name) != entityClasses.end();
@@ -316,6 +316,72 @@ namespace Nut {
 			{
 				component.Name = buffer;
 			}
+
+			// Fields
+			Ref<ScriptObject> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetComponent<IDComponent>().ID);
+			if (scriptInstance)
+			{
+				const auto& fields = scriptInstance->GetScriptClass()->GetFields();
+
+				for (const auto& [name, field] : fields)
+				{
+					if (field.Type == ScriptFieldType::Float)
+					{
+						float data = scriptInstance->GetFieldValue<float>(name);
+						if (ImGui::DragFloat(name.c_str(), &data))
+						{
+							scriptInstance->SetFieldValue(name, data);
+						}
+					}
+
+					if (field.Type == ScriptFieldType::Vector2)
+					{
+						float data = scriptInstance->GetFieldValue<float>(name);
+						if (ImGui::DragFloat2(name.c_str(), &data))
+						{
+							scriptInstance->SetFieldValue(name, data);
+						}
+					}
+
+					if (field.Type == ScriptFieldType::Vector3)
+					{
+						float data = scriptInstance->GetFieldValue<float>(name);
+						if (ImGui::DragFloat3(name.c_str(), &data))
+						{
+							scriptInstance->SetFieldValue(name, data);
+						}
+					}
+
+					if (field.Type == ScriptFieldType::Vector4)
+					{
+						float data = scriptInstance->GetFieldValue<float>(name);
+						if (ImGui::ColorPicker4(name.c_str(), &data))
+						{
+							scriptInstance->SetFieldValue(name, data);
+						}
+					}
+
+					if (field.Type == ScriptFieldType::Int)
+					{
+						float data = scriptInstance->GetFieldValue<float>(name);
+						if (ImGui::DragInt(name.c_str(), &data))
+						{
+							scriptInstance->SetFieldValue(name, data);
+						}
+					}
+
+					if (field.Type == ScriptFieldType::UInt)
+					{
+						float data = scriptInstance->GetFieldValue<float>(name);
+						if (ImGui::DragInt(name.c_str(), &data), 0)
+						{
+							scriptInstance->SetFieldValue(name, data);
+						}
+					}
+
+				}
+			}
+
 
 			if (!scriptClassExists)
 				ImGui::PopStyleColor();
