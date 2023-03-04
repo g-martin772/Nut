@@ -76,12 +76,17 @@ namespace Nut {
 	void Scene::OnRuntimeStart()
 	{
 		NT_CORE_INFO("Starting Scene");
+
+		m_Running = true;
+
 		OnPhysics2DStart();
 		OnScriptingStart();
 	}
 
 	void Scene::OnRuntimeStop()
 	{
+		m_Running = false;
+
 		OnPhysics2DStop();
 
 		OnScriptingStop();

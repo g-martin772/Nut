@@ -86,6 +86,7 @@ namespace Nut {
 
 		std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, Ref<ScriptEntity>> EntityInstances;
+		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
 	};
 
 	static ScrptingEngineData* s_Data;
@@ -176,6 +177,14 @@ namespace Nut {
 			void* id = &entity.GetComponent<IDComponent>().ID;
 			Ref<ScriptEntity> script = std::make_shared<ScriptEntity>(s_Data->EntityClasses[sc.Name], 1, &id);
 			s_Data->EntityInstances[*(UUID*)id] = script;
+
+			if (s_Data->EntityScriptFields.find(*(UUID*)id) != s_Data->EntityScriptFields.end())
+			{
+				const ScriptFieldMap& fieldMap = s_Data->EntityScriptFields.at(*(UUID*)id);
+				for (const auto& [name, fieldInstance] : fieldMap)
+					script->SetFieldValueInternal(name, fieldInstance.m_Buffer);
+			}
+
 			script->OnCreate();
 		}
 	}
@@ -196,6 +205,22 @@ namespace Nut {
 
 		Ref<ScriptEntity> script = s_Data->EntityInstances[id];
 		script->OnDestroy();
+	}
+
+	Ref<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
+	{
+		if (s_Data->EntityClasses.find(name) == s_Data->EntityClasses.end())
+			return nullptr;
+
+		return s_Data->EntityClasses.at(name);
+	}
+
+	ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
+	{
+		NT_CORE_ASSERT(entity, "Entity was null");
+
+		UUID entityID = entity.GetComponent<IDComponent>().ID;
+		return s_Data->EntityScriptFields[entityID];
 	}
 
 	// TODO: Implement proper FILE API

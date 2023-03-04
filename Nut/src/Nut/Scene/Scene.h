@@ -23,6 +23,8 @@ namespace Nut {
 
 		Entity GetPrimaryCameraEntity();
 
+		bool IsRunning() const { return m_Running; }
+
 		void OnRuntimeStart();
 		void OnRuntimeStop();
 
@@ -57,6 +59,7 @@ namespace Nut {
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
+		bool m_Running = false;
 
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
 

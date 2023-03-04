@@ -12,7 +12,6 @@ namespace Sandbox
 
         public override void OnCreate()
         {
-            speed = 10;
             rb = GetComponent<RigidBody2DComponent>();
         }
 
@@ -42,7 +41,6 @@ namespace Sandbox
 
         public override void OnCreate()
         {
-            speed = 10;
             rb = GetComponent<RigidBody2DComponent>();
         }
 
