@@ -42,18 +42,18 @@ namespace Nut {
 		template<typename T>
 		T GetValue()
 		{
-			static_assert(sizeof(T) <= 8, "Type too large!");
+			static_assert(sizeof(T) <= 16, "Type too large!");
 			return *(T*)m_Buffer;
 		}
 
 		template<typename T>
 		void SetValue(T value)
 		{
-			static_assert(sizeof(T) <= 8, "Type too large!");
+			static_assert(sizeof(T) <= 16, "Type too large!");
 			memcpy(m_Buffer, &value, sizeof(T));
 		}
 	private:
-		uint8_t m_Buffer[8];
+		uint8_t m_Buffer[16];
 
 		friend class ScriptEngine;
 		friend class ScriptInstance;
@@ -134,7 +134,7 @@ namespace Nut {
 		template<typename T>
 		T GetFieldValue(const std::string& name)
 		{
-			static_assert(sizeof(T) <= 8, "Type too large!");
+			static_assert(sizeof(T) <= 16, "Type too large!");
 			bool success = GetFieldValueInternal(name, s_FieldValueBuffer);
 			if (!success)
 				return T();
@@ -145,7 +145,7 @@ namespace Nut {
 		template<typename T>
 		void SetFieldValue(const std::string& name, T value)
 		{
-			static_assert(sizeof(T) <= 8, "Type too large!");
+			static_assert(sizeof(T) <= 16, "Type too large!");
 
 			SetFieldValueInternal(name, &value);
 		}
@@ -180,4 +180,63 @@ namespace Nut {
 		MonoMethod* m_OnDestroy;
 		MonoMethod* m_OnUpdate;
 	};
+
+
+
+
+
+
+	namespace Utils {
+
+		inline const char* ScriptFieldTypeToString(ScriptFieldType fieldType)
+		{
+			switch (fieldType)
+			{
+			case ScriptFieldType::None:    return "None";
+			case ScriptFieldType::Float:   return "Float";
+			case ScriptFieldType::Double:  return "Double";
+			case ScriptFieldType::Bool:    return "Bool";
+			case ScriptFieldType::Char:    return "Char";
+			case ScriptFieldType::Byte:    return "Byte";
+			case ScriptFieldType::Short:   return "Short";
+			case ScriptFieldType::Int:     return "Int";
+			case ScriptFieldType::Long:    return "Long";
+			case ScriptFieldType::UByte:   return "UByte";
+			case ScriptFieldType::UShort:  return "UShort";
+			case ScriptFieldType::UInt:    return "UInt";
+			case ScriptFieldType::ULong:   return "ULong";
+			case ScriptFieldType::Vector2: return "Vector2";
+			case ScriptFieldType::Vector3: return "Vector3";
+			case ScriptFieldType::Vector4: return "Vector4";
+			case ScriptFieldType::Entity:  return "Entity";
+			}
+			NT_CORE_ASSERT(false, "Unknown ScriptFieldType");
+			return "None";
+		}
+
+		inline ScriptFieldType ScriptFieldTypeFromString(std::string_view fieldType)
+		{
+			if (fieldType == "None")    return ScriptFieldType::None;
+			if (fieldType == "Float")   return ScriptFieldType::Float;
+			if (fieldType == "Double")  return ScriptFieldType::Double;
+			if (fieldType == "Bool")    return ScriptFieldType::Bool;
+			if (fieldType == "Char")    return ScriptFieldType::Char;
+			if (fieldType == "Byte")    return ScriptFieldType::Byte;
+			if (fieldType == "Short")   return ScriptFieldType::Short;
+			if (fieldType == "Int")     return ScriptFieldType::Int;
+			if (fieldType == "Long")    return ScriptFieldType::Long;
+			if (fieldType == "UByte")   return ScriptFieldType::UByte;
+			if (fieldType == "UShort")  return ScriptFieldType::UShort;
+			if (fieldType == "UInt")    return ScriptFieldType::UInt;
+			if (fieldType == "ULong")   return ScriptFieldType::ULong;
+			if (fieldType == "Vector2") return ScriptFieldType::Vector2;
+			if (fieldType == "Vector3") return ScriptFieldType::Vector3;
+			if (fieldType == "Vector4") return ScriptFieldType::Vector4;
+			if (fieldType == "Entity")  return ScriptFieldType::Entity;
+
+			NT_CORE_ASSERT(false, "Unknown ScriptFieldType");
+			return ScriptFieldType::None;
+		}
+
+	}
 }

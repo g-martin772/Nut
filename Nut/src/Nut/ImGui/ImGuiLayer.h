@@ -23,7 +23,7 @@ namespace Nut {
 		void Begin();
 		void End();
 
-		void SetConsumeEvents(bool consume) { m_ConsumeEvents = consume; }
+		void BlockEvents(bool consume) { m_ConsumeEvents = consume; }
 	private:
 		void SetDarkThemeColors();
 	private:

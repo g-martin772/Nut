@@ -45,30 +45,6 @@ namespace Nut {
 
 		return it->second;
 	}
-
-	const char* ScriptFieldTypeToString(ScriptFieldType type)
-	{
-		switch (type)
-		{
-		case ScriptFieldType::Float:   return "Float";
-		case ScriptFieldType::Double:  return "Double";
-		case ScriptFieldType::Bool:    return "Bool";
-		case ScriptFieldType::Char:    return "Char";
-		case ScriptFieldType::Byte:    return "Byte";
-		case ScriptFieldType::Short:   return "Short";
-		case ScriptFieldType::Int:     return "Int";
-		case ScriptFieldType::Long:    return "Long";
-		case ScriptFieldType::UByte:   return "UByte";
-		case ScriptFieldType::UShort:  return "UShort";
-		case ScriptFieldType::UInt:    return "UInt";
-		case ScriptFieldType::ULong:   return "ULong";
-		case ScriptFieldType::Vector2: return "Vector2";
-		case ScriptFieldType::Vector3: return "Vector3";
-		case ScriptFieldType::Vector4: return "Vector4";
-		case ScriptFieldType::Entity:  return "Entity";
-		}
-		return "<Invalid>";
-	}
 	
 	struct ScrptingEngineData {
 		MonoDomain* RootDomain = nullptr;
@@ -307,7 +283,7 @@ namespace Nut {
 				{
 					MonoType* type = mono_field_get_type(field);
 					ScriptFieldType fieldType = MonoTypeToScriptFieldType(type);
-					NT_CORE_WARN("  {} ({})", fullName, ScriptFieldTypeToString(fieldType));
+					NT_CORE_WARN("  {} ({})", fullName, Utils::ScriptFieldTypeToString(fieldType));
 
 					s_Data->EntityClasses[fullName]->m_Fields[fieldName] = { fieldType, fieldName, field };
 				}

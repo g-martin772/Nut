@@ -28,8 +28,7 @@ namespace Nut {
 		{
 			auto sceneFilePath = commandLineArgs[1];
 			NT_INFO("{0}", sceneFilePath);
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Deserialize(sceneFilePath);
+			OpenScene(sceneFilePath);
 		}
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
@@ -247,7 +246,7 @@ namespace Nut {
 		m_ViewportFocus = ImGui::IsWindowFocused();
 		m_ViewportHover = ImGui::IsWindowHovered();
 
-		Application::Get().GetImGuiLayer()->SetConsumeEvents(!m_ViewportFocus && !m_ViewportHover);
+		Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportHover);
 
 		ImVec2 vpPanelsize = ImGui::GetContentRegionAvail();
 
