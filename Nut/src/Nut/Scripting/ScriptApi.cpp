@@ -324,6 +324,7 @@ namespace Nut {
 
 	void ScriptApi::RegisterComponents()
 	{
+		s_EntityHasComponentFuncs.clear();
 		RegisterComponent(AllComponents{});
 	}
 

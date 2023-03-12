@@ -99,11 +99,13 @@ namespace Nut {
 		mono_set_assemblies_path("mono/lib");
 
 		// Creating a root domain
-		MonoDomain* rootDomain = mono_jit_init("NutScriptRuntime");
-		NT_CORE_ASSERT(rootDomain, "Initializing mono-jit failed");
+		if (!s_Data->RootDomain) {
+			MonoDomain* rootDomain = mono_jit_init("NutScriptRuntime");
+			NT_CORE_ASSERT(rootDomain, "Initializing mono-jit failed");
 
-		// Store the root domain pointer
-		s_Data->RootDomain = rootDomain;
+			// Store the root domain pointer
+			s_Data->RootDomain = rootDomain;
+		}
 
 		// Create an App Domain
 		s_Data->AppDomain = mono_domain_create_appdomain("NutAppDomain", nullptr);
@@ -126,8 +128,11 @@ namespace Nut {
 
 	void ScriptEngine::ShutdownMono()
 	{
-		delete s_Data->AppDomain;
-		delete s_Data->RootDomain;
+		mono_domain_set(mono_get_root_domain(), false);
+		mono_domain_unload(s_Data->AppDomain);
+		s_Data->AppDomain = nullptr;
+		/*mono_jit_cleanup(s_Data->RootDomain);
+		s_Data->RootDomain = nullptr;*/
 	}
 
 	std::unordered_map<std::string, Nut::Ref<Nut::ScriptClass>> ScriptEngine::GetEntityClasses()
@@ -181,6 +186,30 @@ namespace Nut {
 
 		Ref<ScriptEntity> script = s_Data->EntityInstances[id];
 		script->OnDestroy();
+	}
+
+	void ScriptEngine::ReloadAssembly()
+	{
+		/*mono_domain_set(mono_get_root_domain(), false);
+
+		mono_domain_unload(s_Data->AppDomain);
+
+		s_Data->AppDomain = mono_domain_create_appdomain("HazelScriptRuntime", nullptr);
+		mono_domain_set(s_Data->AppDomain, true);
+
+		s_Data->CoreAssembly = LoadMonoAssembly("Assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll");
+		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
+
+		s_Data->GameAssembly = LoadMonoAssembly("resources/SandboxProject/bin/Sandbox/Sandbox.dll");
+		s_Data->GameAssemblyImage = mono_assembly_get_image(s_Data->GameAssembly);
+
+		LoadEntityClasses(s_Data->GameAssembly);
+
+		ScriptApi::RegisterComponents();
+
+		s_Data->EntityCLass = std::make_shared<ScriptClass>("Hazel", "Entity");*/
+		ShutdownMono();
+		InitMono();
 	}
 
 	Ref<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)

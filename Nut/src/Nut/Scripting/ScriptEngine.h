@@ -86,6 +86,8 @@ namespace Nut {
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, Timestep ts);
 		static void OnDestroyEntity(Entity entity);
+
+		static void ReloadAssembly();
 	private:
 		static void InitMono();
 		static void ShutdownMono();

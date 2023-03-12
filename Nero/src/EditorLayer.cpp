@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
 #include <filesystem>
+#include "Nut/Scripting/ScriptEngine.h"
 
 #define PROFILE_SCOPE(name) Timer timer##__LINE__(name, [&](ProfileResult profileResult) { m_ProfileResults.push_back(profileResult); })
 
@@ -206,7 +207,13 @@ namespace Nut {
 				ImGui::EndMenu();
 			} 
 			
+			if (ImGui::BeginMenu("Script")) {
+				if (ImGui::MenuItem("Reload Assambly", "Ctrl+R")) {
+					ScriptEngine::ReloadAssembly();
+				};
 
+				ImGui::EndMenu();
+			}
 
 			if (ImGui::BeginMenu("View")) {
 				if (ImGui::MenuItem("Toggle PhysicsCollider Visualization")) {
@@ -539,7 +546,10 @@ namespace Nut {
 			m_GuizmoType = ImGuizmo::OPERATION::ROTATE;
 			break;
 		case NT_KEY_R:
-			m_GuizmoType = ImGuizmo::OPERATION::SCALE;
+			if (control)
+				ScriptEngine::ReloadAssembly();
+			else
+				m_GuizmoType = ImGuizmo::OPERATION::SCALE;
 			break;
 		}
 		return false;
