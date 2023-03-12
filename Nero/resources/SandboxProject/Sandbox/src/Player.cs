@@ -29,6 +29,17 @@ namespace Sandbox
             else if (Input.IsKeyDown(Key.D))
                 velocity.X += speed;
 
+            Entity cameraEntity = FindEntityByName("Camera");
+            if (cameraEntity != null)
+            {
+                Camera camera = cameraEntity.As<Camera>();
+
+                if (Input.IsKeyDown(Key.Q))
+                    camera.DistanceFromPlayer += speed * 2.0f * ts;
+                else if (Input.IsKeyDown(Key.E))
+                    camera.DistanceFromPlayer -= speed * 2.0f * ts;
+            }
+
             velocity *= ts;
             rb.ApplyLinearImpulse(velocity);
         }

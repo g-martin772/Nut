@@ -41,6 +41,26 @@ namespace Nut {
 		NT_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "Component type not found");
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
 	}
+
+	static MonoObject* GetScriptInstance(UUID entityID)
+	{
+		return ScriptEngine::GetManagedInstance(entityID);
+	}
+
+	static uint64_t Entity_FindEntityByName(MonoString* name)
+	{
+		char* nameCStr = mono_string_to_utf8(name);
+
+		Scene* scene = ScriptEngine::GetCurrentScene();
+		NT_CORE_ASSERT(scene, "No active scrip scene");
+		Entity entity = scene->FindEntityByName(nameCStr);
+		mono_free(nameCStr);
+
+		if (!entity)
+			return 0;
+
+		return entity.GetComponent<IDComponent>().ID;
+	}
 	#pragma endregion
 
 
@@ -312,7 +332,9 @@ namespace Nut {
 	{
 		NT_ADD_INTERNAL_CALL(Print);
 
+		NT_ADD_INTERNAL_CALL(GetScriptInstance);
 		NT_ADD_INTERNAL_CALL(Entity_HasComponent);
+		NT_ADD_INTERNAL_CALL(Entity_FindEntityByName);
 
 		NT_ADD_INTERNAL_CALL(TransformComponent_GetTranslation);
 		NT_ADD_INTERNAL_CALL(TransformComponent_SetTranslation);

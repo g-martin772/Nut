@@ -81,6 +81,7 @@ namespace Nut {
 		static Ref<ScriptObject> GetEntityScriptInstance(UUID entityID);
 		static Ref<ScriptClass> GetEntityClass(const std::string& name);
 		static ScriptFieldMap& GetScriptFieldMap(Entity entity);
+		static MonoObject* GetManagedInstance(UUID uuid);
 
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, Timestep ts);
@@ -149,6 +150,8 @@ namespace Nut {
 
 			SetFieldValueInternal(name, &value);
 		}
+
+		MonoObject* GetManagedObject() { return m_Instance; }
 
 	private:
 		bool GetFieldValueInternal(const std::string& name, void* buffer);

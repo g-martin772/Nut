@@ -20,6 +20,7 @@ namespace Nut {
 		Entity CreateEntity(const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
 		Entity GetEntityByUUID(UUID uuid);
+		Entity FindEntityByName(std::string_view name);
 
 		Entity GetPrimaryCameraEntity();
 

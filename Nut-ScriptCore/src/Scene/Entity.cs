@@ -30,5 +30,20 @@ namespace Nut.Scene
                 return null; // Or throw exception maybe?
             return new T() { Entity = this };
         }
+
+        public static Entity FindEntityByName(string name)
+        {
+            ulong entityID = InternalCalls.Native_Entity_FindEntityByName(name);
+            if (entityID == 0)
+                return null;
+
+            return new Entity(entityID);
+        }
+
+        public T As<T>() where T : Entity, new()
+        {
+            object instance = InternalCalls.Native_GetScriptInstance(id);
+            return instance as T;
+        }
     }
 }

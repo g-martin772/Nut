@@ -2,7 +2,7 @@ Scene: Untitled Scene
 Entitys:
   - Entity: 1018872447240047970
     TagComponent:
-      Tag: Circle
+      Tag: Player2
     TransformComponent:
       Translation: [-0.677401483, 2.06231833, 0]
       Rotation: [0, 0, 0]
@@ -67,9 +67,15 @@ Entitys:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
+    ScriptComponent:
+      Name: Sandbox.Camera
+      ScriptFields:
+        - Name: DistanceFromPlayer
+          Type: Float
+          Data: 4
   - Entity: 2521038104214275109
     TagComponent:
-      Tag: Square
+      Tag: Player1
     TransformComponent:
       Translation: [-0.549448967, -0.270960778, 0]
       Rotation: [0, 0, -0.864951015]

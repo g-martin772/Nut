@@ -199,6 +199,13 @@ namespace Nut {
 		return s_Data->EntityScriptFields[entityID];
 	}
 
+	MonoObject* ScriptEngine::GetManagedInstance(UUID uuid)
+	{
+		if(s_Data->EntityInstances.find(uuid) != s_Data->EntityInstances.end())
+			return s_Data->EntityInstances.at(uuid)->GetManagedObject();
+		return nullptr;
+	}
+
 	// TODO: Implement proper FILE API
 	char* ReadBytes(const std::string& filepath, uint32_t* outSize)
 	{

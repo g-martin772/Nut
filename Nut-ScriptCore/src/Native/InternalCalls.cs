@@ -17,6 +17,11 @@ namespace Nut
         #region Entity
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool Native_Entity_HasComponent(UInt64 entityID, Type componentType);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static ulong Native_Entity_FindEntityByName(string name);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static object Native_GetScriptInstance(ulong entityID);
         #endregion
 
 
