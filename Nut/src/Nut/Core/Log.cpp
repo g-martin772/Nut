@@ -7,5 +7,6 @@ namespace Nut {
 
 		Log::GetCoreLogger()->set_level(spdlog::level::trace);
 		Log::GetClientLogger()->set_level(spdlog::level::trace);
+		Log::GetScriptLogger()->set_level(spdlog::level::trace);
 	}
 }

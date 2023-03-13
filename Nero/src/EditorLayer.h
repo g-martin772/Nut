@@ -8,7 +8,7 @@
 namespace Nut {
 	class EditorLayer : public Layer {
 	public:
-		inline EditorLayer() : Layer("Sandbox2D"), m_CameraController(1280.0f / 720.0f, true) {}
+		inline EditorLayer() : Layer("Sandbox2D") {}
 		inline ~EditorLayer() {}
 
 		void OnUpdate(Nut::Timestep ts) override;
@@ -16,25 +16,39 @@ namespace Nut {
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnImGuiRender() override;
+		void OnOverlayRender();
 	private:
+		void NewScene();
 		void CreateNewScene();
 		bool OnKeyPressed(KeyPressedEvent& e);
+		void OpenScene();
 		void OpenScene(const std::filesystem::path& path);
-		bool OnMouseButtonPressed(ButtonPressedEvent& e);
+		void SaveScene();
+		void SaveSceneAs();
+
+		void SerializeScene(Ref<Scene> scene, const std::filesystem::path& path);
+		void OnDuplicateEntity();
 
 		void OnScenePlay();
+		void OnSceneSimulate();
 		void OnSceneStop();
+		void OnScenePause();
+
+		bool OnMouseButtonPressed(ButtonPressedEvent& e);
 
 		// UI Panels
 		void UI_Toolbar();
 	private:
 		//Renderer stuff
-		ShaderLibrary m_Shader;
-		OrthographicCameraController m_CameraController;
 		Ref<FrameBuffer> m_FrameBuffer;
+
+		float m_ElapsedTime = 0.0f;
+		int m_FrameCount = 0;
 
 		//ECS
 		Ref<Scene> m_ActiveScene;
+		Ref<Scene> m_EditorScene;
+		std::filesystem::path m_EditorScenePath;
 		Entity m_SquareEntity;
 		Entity m_CameraEntity;
 		Entity m_HoveredEntity;
@@ -47,6 +61,8 @@ namespace Nut {
 		glm::vec2 m_ViewportSize;
 		glm::vec2 m_ViewportBounds[2];
 
+		bool m_ShowPhysicsColliders = false;
+
 		//Panels
 		SceneHierachyPanel m_SceneHierachyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
@@ -55,11 +71,11 @@ namespace Nut {
 		//Scene State
 		enum class SceneState
 		{
-			Edit = 0, Play = 1
+			Edit = 0, Play = 1, Simulate = 2
 		};
 		SceneState m_SceneState = SceneState::Edit;
 
 		//Editor resources
-		Ref<Texture2D> m_IconPlay, m_IconStop;
+		Ref<Texture2D> m_IconPlay, m_IconPause, m_IconStep, m_IconSimulate, m_IconStop;
 	};																				// hi
 }

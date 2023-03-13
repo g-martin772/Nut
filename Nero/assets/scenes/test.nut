@@ -1,6 +1,17 @@
 Scene: Untitled Scene
 Entitys:
-  - Entity: 1234567890
+  - Entity: 1889277629856420372
+    TagComponent:
+      Tag: Square
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scalation: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0, 1, 0, 1]
+      Texture: none
+      TilingFactor: 1
+  - Entity: 6264592209668657858
     TagComponent:
       Tag: Camera
     TransformComponent:
@@ -18,24 +29,3 @@ Entitys:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 1234567890
-    TagComponent:
-      Tag: Square
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scalation: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [0, 1, 0, 1]
-      Texture: none
-      TilingFactor: 1
-    RigidBody2DComponent:
-      Type: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Size: [0.5, 0.5]
-      Offset: [0, 0]
-      Friction: 0.25
-      Density: 1
-      Restitution: 0.439999998
-      RestitutionThreshold: 0.75

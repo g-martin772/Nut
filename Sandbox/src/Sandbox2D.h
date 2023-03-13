@@ -6,7 +6,7 @@
 namespace Sandbox {
 	class Sandbox2D : public Nut::Layer {
 	public:
-		inline Sandbox2D() : Layer("Sandbox2D"), m_CameraController(1280.0f / 720.0f, true) {}
+		inline Sandbox2D() : Layer("Sandbox2D") {}
 		inline ~Sandbox2D() {}
 
 		void OnUpdate(Nut::Timestep ts) override;
@@ -16,7 +16,7 @@ namespace Sandbox {
 		void OnImGuiRender() override;
 	private:
 		Nut::ShaderLibrary m_Shader;
-		Nut::OrthographicCameraController m_CameraController;
+		Nut::EditorCamera m_Camera;
 
 		Nut::Ref<Nut::Texture2D> m_CheckerboardTexture;
 		Nut::Ref<Nut::Texture2D> m_SpriteSheet;

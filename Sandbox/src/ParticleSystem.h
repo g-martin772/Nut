@@ -17,7 +17,7 @@ public:
 	ParticleSystem();
 
 	void OnUpdate(Nut::Timestep ts);
-	void OnRender(Nut::OrthographicCamera& camera);
+	void OnRender(Nut::EditorCamera& camera);
 
 	void Emit(const ParticleProps& particleProps);
 private:

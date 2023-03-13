@@ -25,9 +25,9 @@ Entitys:
     TagComponent:
       Tag: Square
     TransformComponent:
-      Translation: [-0.251764119, 1.77853382, 0]
-      Rotation: [0, 0, -0.582939982]
-      Scalation: [1, 1, 1]
+      Translation: [-0.139892161, 1.25640047, 0]
+      Rotation: [0, 0, 1.09110808]
+      Scalation: [0.999989152, 0.999989152, 1]
     SpriteRendererComponent:
       Color: [0, 1, 0, 1]
       Texture: none
@@ -40,7 +40,7 @@ Entitys:
       Offset: [0, 0]
       Friction: 0.25
       Density: 1
-      Restitution: 0.300000012
+      Restitution: 1
       RestitutionThreshold: 0.75
   - Entity: 1234567890
     TagComponent:

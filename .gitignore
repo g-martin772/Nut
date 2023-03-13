@@ -2,6 +2,7 @@
 .vs/
 int/
 bin/
+bin-int/
 Nut/vendor/VulkanSDK/1.3.231.1/
 scripts/__pycache__/
 
@@ -9,7 +10,11 @@ scripts/__pycache__/
 *.filters
 *.vcxproj
 *.sln
+*.csproj
 Nut/vendor/VulkanSDK/VulkanSDK.exe
 Nero/assets/cache/
+Nut/vendor/GLAD/bin-int/
 
 !vendor/premake/bin/
+
+/Nut

@@ -1,6 +1,8 @@
 #include "Sandbox2D.h"
 
-#include "../../Nut/vendor/glm/glm/gtc/type_ptr.hpp"
+#include "Nut/Renderer/EditorCamera.h"
+
+#include "glm/gtc/type_ptr.hpp"
 
 #define PROFILE_SCOPE(name) Timer timer##__LINE__(name, [&](ProfileResult profileResult) { m_ProfileResults.push_back(profileResult); })
 
@@ -52,6 +54,8 @@ namespace Sandbox {
 		m_Particle.Velocity = { 0.0f, 0.0f };
 		m_Particle.VelocityVariation = { 3.0f, 1.0f };
 		m_Particle.Position = { 0.0f, 0.0f };
+
+		m_Camera = Nut::EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 	}
 
 	void Sandbox2D::OnUpdate(Nut::Timestep ts)
@@ -59,8 +63,6 @@ namespace Sandbox {
 		NT_TRACE("Frametime: {0}ms", ts * 1000.0f);
 
 		NT_PROFILE_FUNCTION();
-
-		m_CameraController.OnUpdate(ts);
 
 		{
 			NT_PROFILE_SCOPE("Sandbox::OnUpdate -> RenderCommand.Clear");
@@ -71,15 +73,8 @@ namespace Sandbox {
 		{
 			NT_PROFILE_SCOPE("Sandbox::OnUpdate -> Renderer.Draw");
 			Nut::Renderer2D::ResetStats();
-			Nut::Renderer2D::BeginScene(m_CameraController.GetCamera());
-
-
-			Nut::Renderer2D::DrawQuad({ 0.5f, 1.5f }, { 0.8f, 1.3f }, m_Color);
-			Nut::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 10.0f, 10.0f }, 45, m_CheckerboardTexture, m_Color, 10);
-			Nut::Renderer2D::DrawQuad({ 20.0f, 20.0f, 0.0f }, { 1.0f, 1.0f }, m_SpriteSheet);
-
 			
-			Nut::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, { 10.0f, 10.0f }, r, m_CheckerboardTexture);
+			Nut::Renderer2D::BeginScene(m_Camera);
 
 			for (float y = -10.0f; y < 10.0f; y += 0.25f) {
 				for (float x = -10.0f; x < 10.0f; x += 0.25f)
@@ -99,7 +94,7 @@ namespace Sandbox {
 						//Nut::Renderer2D::DrawQuad({ -20.0f + x, -20.0f - y, -1.0f }, { 1.0f, 1.0f }, m_CheckerboardTexture);
 					else {
 						auto texture = s_TextureMap[key];
-						Nut::Renderer2D::DrawQuad({ -20.0f + x, -20.0f - y, 0.0f }, { 1.0f, 1.0f }, texture);
+						//Nut::Renderer2D::DrawQuad({ -20.0f + x, -20.0f - y, 0.0f }, { 1.0f, 1.0f }, texture);
 					}
 				}
 			}
@@ -113,7 +108,7 @@ namespace Sandbox {
 						//Nut::Renderer2D::DrawQuad({ -20.0f + x, -20.0f - y, -1.0f }, { 1.0f, 1.0f }, m_CheckerboardTexture);
 					else {
 						auto texture = s_TextureMap[key];
-						Nut::Renderer2D::DrawQuad({ -20.0f + x, -20.0f - y, 1.0f }, { 3.0f, 3.0f }, texture);
+						//Nut::Renderer2D::DrawQuad({ -20.0f + x, -20.0f - y, 1.0f }, { 3.0f, 3.0f }, texture);
 					}
 				}
 			}
@@ -125,31 +120,32 @@ namespace Sandbox {
 				r = r + 0.2f * ts.GetMilliseconds();
 			}
 
+			m_Camera.OnUpdate(ts);
+
 			//ParticleTest
-			if (Nut::Input::IsMouseButtonPressed(1))
+			if (Nut::Input::IsMouseButtonPressed(NT_MOUSE_BUTTON_LEFT))
 			{
 				auto x = Nut::Input::GetMouseX();
 				auto y = Nut::Input::GetMouseY();
 				auto width = Nut::Application::Get().GetWindow().GetWidth();
 				auto height = Nut::Application::Get().GetWindow().GetHeight();
 
-				auto bounds = m_CameraController.GetBounds();
-				auto pos = m_CameraController.GetCamera().GetPosition();
-				x = (x / width) * bounds.GetWidth() - bounds.GetWidth() * 0.5f;
-				y = bounds.GetHeight() * 0.5f - (y / height) * bounds.GetHeight();
+				auto pos = m_Camera.GetPosition();
+				x = (x) / 100;
+				y = (y) / 100;
 				m_Particle.Position = { x + pos.x, y + pos.y };
 				for (int i = 0; i < 5; i++)
 					m_ParticleSystem.Emit(m_Particle);
 			}
 
 			m_ParticleSystem.OnUpdate(ts);
-			m_ParticleSystem.OnRender(m_CameraController.GetCamera());
+			m_ParticleSystem.OnRender(m_Camera);
 		}
 	}
 
 	void Sandbox2D::OnEvent(Nut::Event& e)
 	{
-		m_CameraController.OnEvent(e);
+		m_Camera.OnEvent(e);
 	}
 
 
@@ -174,7 +170,6 @@ namespace Sandbox {
 
 	void Sandbox2D::OnDetach()
 	{
-
 	}
 }
 

@@ -1,6 +1,9 @@
 #pragma once
 
-#include <enTT/entt.hpp>
+#include "Nut/Scene/SceneCamera.h"
+#include "Nut/Renderer/Texture.h"
+#include "Nut/Core/UUID.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -9,11 +12,15 @@
 
 #include <functional>
 
-#include "Nut/Scene/SceneCamera.h"
-#include "Nut/Scene/ScriptableEntity.h"
-#include "Nut/Renderer/Texture.h"
-
 namespace Nut {
+
+	struct IDComponent {
+		UUID ID;
+
+		IDComponent() = default;
+		IDComponent(const IDComponent&) = default;
+	};
+
 	struct TagComponent {
 		std::string Tag;
 
@@ -38,7 +45,8 @@ namespace Nut {
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const glm::mat4& transform) : Transform(transform) {}
 
-		glm::mat4 GetTransform() {
+		glm::mat4 GetTransform() const
+		{
 			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 
 			return glm::translate(glm::mat4(1.0f), Translation) * rotation * glm::scale(glm::mat4(1.0f), Scalation);;
@@ -58,6 +66,17 @@ namespace Nut {
 		operator const glm::vec4& () const { return Color; }
 	};
 
+	struct CircleRendererComponent {
+		glm::vec4 Color{ 1.0f };
+		float Radius = 0.5f;
+		float Thickness = 1.0f;
+		float Fade = 0.005f;
+
+		CircleRendererComponent() = default;
+		CircleRendererComponent(glm::vec4 color) { Color = color; }
+		CircleRendererComponent(const CircleRendererComponent&) = default;
+	};
+
 	struct CameraComponent {
 		SceneCamera Camera;
 		bool Primary = true;
@@ -67,8 +86,10 @@ namespace Nut {
 		CameraComponent(const CameraComponent&) = default;
 	};
 
-	struct NativeScriptComponent
-	{
+
+	class ScriptableEntity;
+
+	struct NativeScriptComponent {
 		ScriptableEntity* Instance = nullptr;
 
 		ScriptableEntity* (*InstantiateFunction)();
@@ -80,6 +101,14 @@ namespace Nut {
 			InstantiateFunction = []() { return static_cast<ScriptableEntity*>(new T()); };
 			DestroyInstanceFunction = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 		}
+	};
+
+	struct ScriptComponent {
+		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent&) = default;
+		ScriptComponent(std::string name) { Name = name; }
+
+		std::string Name;
 	};
 
 	struct RigidBody2DComponent {
@@ -107,4 +136,30 @@ namespace Nut {
 		BoxCollider2DComponent() = default;
 		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
 	};
+
+	struct CircleCollider2DComponent {
+		glm::vec2 Offset = { 0.0f, 0.0f };
+		float Radius = 0.5f;
+
+		float Density = 1.0f;
+		float Friction = 0.5f;
+		float Restitution = 0.0f;
+		float RestitutionThreshold = 0.5f;
+
+		void* RuntimeFixture = nullptr;
+
+		CircleCollider2DComponent() = default;
+		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
+	};
+
+
+	template<typename... Component>
+	struct ComponentGroup {
+	};
+
+	using AllComponents =
+		ComponentGroup<TransformComponent, SpriteRendererComponent,
+		CircleRendererComponent, CameraComponent, ScriptComponent,
+		NativeScriptComponent, RigidBody2DComponent, BoxCollider2DComponent,
+		CircleCollider2DComponent>;
 }

@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
 #include <filesystem>
+#include "Nut/Scripting/ScriptEngine.h"
 
 #define PROFILE_SCOPE(name) Timer timer##__LINE__(name, [&](ProfileResult profileResult) { m_ProfileResults.push_back(profileResult); })
 
@@ -18,7 +19,8 @@ namespace Nut {
 		fbSpec.Height = 720;
 		m_FrameBuffer = FrameBuffer::Create(fbSpec);
 
-		m_ActiveScene = std::make_shared<Scene>();
+		m_EditorScene = std::make_shared<Scene>();
+		m_ActiveScene = m_EditorScene;
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierachyPanel.SetContext(m_ActiveScene);
 
@@ -27,25 +29,35 @@ namespace Nut {
 		{
 			auto sceneFilePath = commandLineArgs[1];
 			NT_INFO("{0}", sceneFilePath);
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Deserialize(sceneFilePath);
+			OpenScene(sceneFilePath);
 		}
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
 		m_IconPlay = Texture2D::Create("resources/icons/editor/PlayButton.png");
+		m_IconSimulate = Texture2D::Create("resources/icons/editor/SimulateButton.png");
 		m_IconStop = Texture2D::Create("resources/icons/editor/StopButton.png");
+		m_IconPause = Texture2D::Create("resources/icons/editor/PauseButton.png");
+		m_IconStep = Texture2D::Create("resources/icons/editor/StepButton.png");
 	}
 
 	void EditorLayer::OnUpdate(Nut::Timestep ts)
 	{
 		NT_PROFILE_FUNCTION();
+
+		m_ElapsedTime += ts.GetMilliseconds();
+		if (m_ElapsedTime >= 1000) {
+			NT_TRACE("Currently running with: {0}fps", m_FrameCount);
+			m_FrameCount = 0;
+			m_ElapsedTime = 0.0f;
+		}
+		m_FrameCount++;
+
 		if (FrameBufferSpecs spec = m_FrameBuffer->GetSpecs();
 			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
 			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
 			m_FrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_CameraController.Resize(m_ViewportSize.x, m_ViewportSize.y);
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			RenderCommand::SetViewport(0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
@@ -63,12 +75,16 @@ namespace Nut {
 		{
 			case SceneState::Edit:
 			{
-				if (m_ViewportFocus)
-					m_CameraController.OnUpdate(ts);
-
 				m_EditorCamera.OnUpdate(ts);
 
 				m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+				break;
+			}
+			case SceneState::Simulate:
+			{
+				m_EditorCamera.OnUpdate(ts);
+
+				m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
 				break;
 			}
 			case SceneState::Play:
@@ -78,6 +94,7 @@ namespace Nut {
 			}
 		}
 
+		OnOverlayRender();
 
 		//Mouse picking stuff
 		auto [mx, my] = ImGui::GetMousePos();
@@ -99,8 +116,6 @@ namespace Nut {
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		m_CameraController.OnEvent(e);
-
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(NT_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
 		dispatcher.Dispatch<ButtonPressedEvent>(NT_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
@@ -167,20 +182,55 @@ namespace Nut {
 			if (ImGui::BeginMenu("Application"))
 			{
 				// TODO Dialog for normal save
-				if (ImGui::MenuItem("New...", "Ctrl+N")) { m_ActiveScene = std::make_shared<Scene>(); m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); m_SceneHierachyPanel.SetContext(m_ActiveScene); CreateNewScene(); };
-				if (ImGui::MenuItem("Open...", "Ctrl+O")) { m_ActiveScene = std::make_shared<Scene>(); m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); m_SceneHierachyPanel.SetContext(m_ActiveScene); SceneSerializer s(m_ActiveScene); s.Deserialize(FileDialog::OpenFile("Nut Scene (*.nut)\0*.nut\0")); };
-				if (ImGui::MenuItem("Save...", "Ctrl+S")) { SceneSerializer s(m_ActiveScene); };
-				if (ImGui::MenuItem("SaveAs...", "Ctrl+Shift+S")) { SceneSerializer s(m_ActiveScene); s.Serialize(FileDialog::SaveFile("Nut Scene (*.nut)\0*.nut\0")); };
-				if (ImGui::MenuItem("Close", "Shift+Esc")) Nut::Application::Get().Close();
+				if (ImGui::MenuItem("New...", "Ctrl+N")) { 
+					m_ActiveScene = std::make_shared<Scene>(); 
+					m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); 
+					m_SceneHierachyPanel.SetContext(m_ActiveScene);
+					CreateNewScene(); 
+					m_EditorScene = m_ActiveScene;
+				};
+				if (ImGui::MenuItem("Open...", "Ctrl+O")) { 
+					m_ActiveScene = std::make_shared<Scene>(); 
+					m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); 
+					m_SceneHierachyPanel.SetContext(m_ActiveScene); 
+					SceneSerializer s(m_ActiveScene); 
+					s.Deserialize(FileDialog::OpenFile("Nut Scene (*.nut)\0*.nut\0")); 
+				};
+				if (ImGui::MenuItem("Save...", "Ctrl+S")) { 
+					SceneSerializer s(m_ActiveScene); 
+				};
+				if (ImGui::MenuItem("SaveAs...", "Ctrl+Shift+S")) { 
+					SceneSerializer s(m_ActiveScene); 
+					s.Serialize(FileDialog::SaveFile("Nut Scene (*.nut)\0*.nut\0")); 
+				};
+				if (ImGui::MenuItem("Close", "Shift+Esc")) 
+					Nut::Application::Get().Close();
+
+				ImGui::EndMenu();
+			} 
+			
+			if (ImGui::BeginMenu("Script")) {
+				if (ImGui::MenuItem("Reload Assambly", "Ctrl+R")) {
+					ScriptEngine::ReloadAssembly();
+				};
+
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("View")) {
+				if (ImGui::MenuItem("Toggle PhysicsCollider Visualization")) {
+					m_ShowPhysicsColliders = !m_ShowPhysicsColliders;
+				};
+
+				ImGui::EndMenu();
+			} 
+			
 			ImGui::EndMenuBar();
 		}
 #endif
 
 		// ---------------------------------
-		//  Actual GUI inside the dockspace
+		//  Actual GUI inside the Dockspace
 		// ---------------------------------
 
 #if 1
@@ -205,7 +255,7 @@ namespace Nut {
 		m_ViewportFocus = ImGui::IsWindowFocused();
 		m_ViewportHover = ImGui::IsWindowHovered();
 
-		Application::Get().GetImGuiLayer()->SetConsumeEvents(!m_ViewportFocus && !m_ViewportHover);
+		Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportHover);
 
 		ImVec2 vpPanelsize = ImGui::GetContentRegionAvail();
 
@@ -234,7 +284,7 @@ namespace Nut {
 		// -------------
 #if 1 
 		Entity selectedEntity = m_SceneHierachyPanel.GetSelectedEntity();
-		if (selectedEntity && m_GuizmoType != -1) {
+		if (selectedEntity && m_GuizmoType != -1 && m_SceneState == SceneState::Edit) {
 			//Cam
 			const glm::mat4& camProj = m_EditorCamera.GetProjection();
 			glm::mat4 camView = m_EditorCamera.GetViewMatrix();
@@ -277,12 +327,73 @@ namespace Nut {
 		ImGui::End(); //Viewport
 		ImGui::PopStyleVar();
 
+		UI_Toolbar();
+
 		m_SceneHierachyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 
-		UI_Toolbar();
 
 		ImGui::End(); //Dockspace
+	}
+
+	void EditorLayer::OnOverlayRender()
+	{
+		if (m_SceneState == SceneState::Play)
+		{
+			Entity camera = m_ActiveScene->GetPrimaryCameraEntity();
+
+			if (!camera)
+				return;
+
+			Renderer2D::BeginScene(camera.GetComponent<CameraComponent>().Camera, camera.GetComponent<TransformComponent>().GetTransform());
+		}
+		else
+		{
+			Renderer2D::BeginScene(m_EditorCamera);
+		}
+
+		if (m_ShowPhysicsColliders)
+		{
+			// Box Colliders
+			{
+				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
+				for (auto entity : view)
+				{
+					auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
+
+					glm::vec3 translation = tc.Translation + glm::vec3(bc2d.Offset, 0.001f);
+					glm::vec3 scale = tc.Scalation * glm::vec3(bc2d.Size * 2.0f, 1.0f);
+
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+						* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
+						* glm::scale(glm::mat4(1.0f), scale);
+
+					RenderCommand::SetLineWidth(2.0f);
+					Renderer2D::DrawRect(transform, glm::vec4(0, 1, 0, 1));
+				}
+			}
+
+			// Circle Colliders
+			{
+				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
+				for (auto entity : view)
+				{
+					auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
+
+					glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, 0.001f);
+					glm::vec3 scale = tc.Scalation * glm::vec3(cc2d.Radius * 2.0f);
+
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+						* glm::scale(glm::mat4(1.0f), scale);
+
+					CircleRendererComponent collider(glm::vec4(0, 1, 0, 1));
+					collider.Thickness = 0.02f;
+					Renderer2D::DrawCircle(transform, collider, -1);
+				}
+			}
+		}
+
+		Renderer2D::EndScene();
 	}
 
 	void EditorLayer::UI_Toolbar()
@@ -298,32 +409,79 @@ namespace Nut {
 
 		ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
+		bool toolbarEnabled = (bool)m_ActiveScene;
+
+		ImVec4 tintColor = ImVec4(1, 1, 1, 1);
+		if (!toolbarEnabled)
+			tintColor.w = 0.5f;
+
 		float size = ImGui::GetWindowHeight() - 4.0f;
-		Ref<Texture2D> icon = m_SceneState == SceneState::Edit ? m_IconPlay : m_IconStop;
+
 		ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
-		if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0))
+
+		bool hasPlayButton = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
+		bool hasSimulateButton = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate;
+		bool hasPauseButton = m_SceneState != SceneState::Edit;
+
+		
+
+		if (hasPlayButton)
 		{
-			if (m_SceneState == SceneState::Edit)
-				OnScenePlay();
-			else if (m_SceneState == SceneState::Play)
-				OnSceneStop();
+			Ref<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_IconPlay : m_IconStop;
+			if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0.0f, 0.0f, 0.0f, 0.0f), tintColor) && toolbarEnabled)
+			{
+				if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
+					OnScenePlay();
+				else if (m_SceneState == SceneState::Play)
+					OnSceneStop();
+			}
 		}
+
+		if (hasSimulateButton)
+		{
+			if (hasPlayButton)
+				ImGui::SameLine();
+
+			Ref<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play) ? m_IconSimulate : m_IconStop;
+			if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0.0f, 0.0f, 0.0f, 0.0f), tintColor) && toolbarEnabled)
+			{
+				if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+					OnSceneSimulate();
+				else if (m_SceneState == SceneState::Simulate)
+					OnSceneStop();
+			}
+		}
+
+		if (hasPauseButton)
+		{
+			bool isPaused = m_ActiveScene->IsPaused();
+			ImGui::SameLine();
+			{
+				Ref<Texture2D> icon = m_IconPause;
+				if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0.0f, 0.0f, 0.0f, 0.0f), tintColor) && toolbarEnabled)
+				{
+					m_ActiveScene->SetPaused(!isPaused);
+				}
+			}
+
+			// Step button
+			if (isPaused)
+			{
+				ImGui::SameLine();
+				{
+					Ref<Texture2D> icon = m_IconStep;
+					bool isPaused = m_ActiveScene->IsPaused();
+					if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0.0f, 0.0f, 0.0f, 0.0f), tintColor) && toolbarEnabled)
+					{
+						m_ActiveScene->Step();
+					}
+				}
+			}
+		}
+
 		ImGui::PopStyleVar(2);
 		ImGui::PopStyleColor(3);
 		ImGui::End();
-	}
-
-	void EditorLayer::OnScenePlay()
-	{
-		m_ActiveScene->OnRuntimeStart();
-		m_SceneState = SceneState::Play;
-	}
-
-	void EditorLayer::OnSceneStop()
-	{
-		m_ActiveScene->OnRuntimeStop();
-		m_SceneState = SceneState::Edit;
-
 	}
 
 	void EditorLayer::OnDetach()
@@ -381,39 +539,27 @@ namespace Nut {
 		switch (e.GetKeyCode())
 		{
 		case NT_KEY_S: {
-			if (control && shift) {
-				SceneSerializer s(m_ActiveScene);
-				s.Serialize(FileDialog::SaveFile("Nut Scene (*.nut)\0*.nut\0"));
-				return true;
+			if (control)
+			{
+				if (shift)
+					SaveSceneAs();
+				else
+					SaveScene();
 			}
 
-			if (control) {
-				return true;
-			}
-
-			return false;
+			break;
 		}
-		case NT_KEY_O: {
-			if (control) {
-				m_ActiveScene = std::make_shared<Scene>();
-				m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-				m_SceneHierachyPanel.SetContext(m_ActiveScene); SceneSerializer s(m_ActiveScene);
-				s.Deserialize(FileDialog::OpenFile("Nut Scene (*.nut)\0*.nut\0"));
-				return true;
-			}
-
-			return false;
+		case NT_KEY_O:
+		{
+			if (control)
+				OpenScene();
+			break;
 		}
-		case NT_KEY_N: {
-			if (control) {
-				m_ActiveScene = std::make_shared<Scene>();
-				m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-				m_SceneHierachyPanel.SetContext(m_ActiveScene);
+		case NT_KEY_N:
+		{
+			if (control)
 				CreateNewScene();
-				return true;
-			}
-
-			return false;
+			break;
 		}
 		case NT_KEY_ESCAPE: {
 			if (shift) {
@@ -422,6 +568,13 @@ namespace Nut {
 			}
 
 			return false;
+		}
+		case NT_KEY_D:
+		{
+			if (control)
+				OnDuplicateEntity();
+
+			break;
 		}
 
 						  // Gizmos
@@ -435,20 +588,140 @@ namespace Nut {
 			m_GuizmoType = ImGuizmo::OPERATION::ROTATE;
 			break;
 		case NT_KEY_R:
-			m_GuizmoType = ImGuizmo::OPERATION::SCALE;
+			if (control)
+				ScriptEngine::ReloadAssembly();
+			else
+				m_GuizmoType = ImGuizmo::OPERATION::SCALE;
 			break;
 		}
 		return false;
 	}
 
+	void EditorLayer::NewScene()
+	{
+		m_EditorScene = std::make_shared<Scene>();
+		m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_SceneHierachyPanel.SetContext(m_EditorScene);
+
+		m_ActiveScene = m_EditorScene;
+
+		m_EditorScenePath = std::filesystem::path();
+	}
+
+	void EditorLayer::OpenScene()
+	{
+		std::string filepath = FileDialog::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
+		if (!filepath.empty())
+			OpenScene(filepath);
+	}
+
 	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
-		m_ActiveScene = std::make_shared<Scene>();
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_SceneHierachyPanel.SetContext(m_ActiveScene);
+		if (m_SceneState != SceneState::Edit)
+			OnSceneStop();
 
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.Deserialize(path.string());
+		if (path.extension().string() != ".nut")
+		{
+			NT_WARN("Could not load {0} - not a scene file", path.filename().string());
+			return;
+		}
+
+		Ref<Scene> newScene = std::make_shared<Scene>();
+		SceneSerializer serializer(newScene);
+		if (serializer.Deserialize(path.string()))
+		{
+			m_EditorScene = newScene;
+			m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_SceneHierachyPanel.SetContext(m_EditorScene);
+
+			m_ActiveScene = m_EditorScene;
+			m_EditorScenePath = path;
+		}
+	}
+
+	void EditorLayer::SaveScene()
+	{
+		if (!m_EditorScenePath.empty())
+			SerializeScene(m_ActiveScene, m_EditorScenePath);
+		else
+			SaveSceneAs();
+	}
+
+	void EditorLayer::SaveSceneAs()
+	{
+		std::string filepath = FileDialog::SaveFile("Hazel Scene (*.hazel)\0*.hazel\0");
+		if (!filepath.empty())
+		{
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Serialize(filepath);
+			SerializeScene(m_ActiveScene, filepath);
+			m_EditorScenePath = filepath;
+		}
+	}
+
+	void EditorLayer::SerializeScene(Ref<Scene> scene, const std::filesystem::path& path)
+	{
+		SceneSerializer serializer(scene);
+		serializer.Serialize(path.string());
+	}
+
+	void EditorLayer::OnScenePlay()
+	{
+		if (m_SceneState == SceneState::Simulate)
+			OnSceneStop();
+
+		m_SceneState = SceneState::Play;
+
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_ActiveScene->OnRuntimeStart();
+
+		m_SceneHierachyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OnSceneSimulate()
+	{
+		if (m_SceneState == SceneState::Play)
+			OnSceneStop();
+
+		m_SceneState = SceneState::Simulate;
+
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_ActiveScene->OnSimulationStart();
+
+		m_SceneHierachyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OnSceneStop()
+	{
+		NT_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate, "You cant stop the editor scene");
+
+		if (m_SceneState == SceneState::Play)
+			m_ActiveScene->OnRuntimeStop();
+		else if (m_SceneState == SceneState::Simulate)
+			m_ActiveScene->OnSimulationStop();
+
+		m_SceneState = SceneState::Edit;
+
+		m_ActiveScene = m_EditorScene;
+
+		m_SceneHierachyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OnScenePause()
+	{
+		if (m_SceneState == SceneState::Edit)
+			return;
+
+		m_ActiveScene->SetPaused(true);
+	}
+
+	void EditorLayer::OnDuplicateEntity()
+	{
+		if (m_SceneState != SceneState::Edit)
+			return;
+
+		Entity selectedEntity = m_SceneHierachyPanel.GetSelectedEntity();
+		if (selectedEntity)
+			m_EditorScene->DuplicateEntity(selectedEntity);
 	}
 }
-

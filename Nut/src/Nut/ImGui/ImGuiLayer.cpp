@@ -95,7 +95,7 @@ namespace Nut {
 	void ImGuiLayer::OnImGuiRender()
 	{
 		bool show = true;
-		ImGui::ShowDemoWindow( &show);
+		//ImGui::ShowDemoWindow( &show);
 	}
 
 	void ImGuiLayer::Begin()

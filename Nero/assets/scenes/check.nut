@@ -2,6 +2,19 @@ Scene: Untitled Scene
 Entitys:
   - Entity: 1234567890
     TagComponent:
+      Tag: Square
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scalation: [4.53999996, 4.53999996, 4.53999996]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Texture: assets\textures\Checkerboard.png
+      TilingFactor: 5.9000001
+    ScriptComponent:
+      Name: Sandbox.Player
+  - Entity: 1234567890
+    TagComponent:
       Tag: Camera
     TransformComponent:
       Translation: [0, 0, 0]
@@ -18,14 +31,3 @@ Entitys:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 1234567890
-    TagComponent:
-      Tag: Square
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scalation: [4.53999996, 4.53999996, 4.53999996]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      Texture: assets\textures\Checkerboard.png
-      TilingFactor: 5.9000001

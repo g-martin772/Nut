@@ -14,7 +14,7 @@ def DownloadFile(url, filepath):
         if total is None:
             f.write(response.content)
         else:
-            downloaded = 0
+            downloaded = 0 
             total = int(total)
             startTime = time.time()
             for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):

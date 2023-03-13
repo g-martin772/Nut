@@ -47,7 +47,7 @@ void ParticleSystem::OnUpdate(Nut::Timestep ts)
 	}
 }
 
-void ParticleSystem::OnRender(Nut::OrthographicCamera& camera)
+void ParticleSystem::OnRender(Nut::EditorCamera& camera)
 {
 	if (!m_QuadVA)
 	{
@@ -72,7 +72,12 @@ void ParticleSystem::OnRender(Nut::OrthographicCamera& camera)
 
 		float size = glm::lerp(particle.SizeEnd, particle.SizeBegin, life);
 
-		Nut::Renderer2D::DrawQuad(particle.Position, {size, size}, glm::degrees(particle.Rotation), color);
+		glm::mat4 transform = 
+			glm::translate(glm::mat4(), { particle.Position, 1 })
+			* glm::scale(glm::mat4(), { size, size, 1 })
+			* glm::rotate(glm::mat4(), glm::degrees(particle.Rotation), {0, 0, 1});
+
+		Nut::Renderer2D::DrawQuad(transform, color, -1);
 	}
 	Nut::Renderer2D::EndScene();
 }
