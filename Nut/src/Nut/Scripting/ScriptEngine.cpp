@@ -128,19 +128,19 @@ namespace Nut {
 	{
 		mono_set_assemblies_path("mono/lib");
 
-		if (s_Data->EnableDebugging)
-		{
-			const char* argv[2] = {
-				"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=MonoDebugger.log",
-				"--soft-breakpoints"
-			};
-
-			mono_jit_parse_options(2, (char**)argv);
-			mono_debug_init(MONO_DEBUG_FORMAT_MONO);
-		}
-
 		// Creating a root domain
 		if (!s_Data->RootDomain) {
+			if (s_Data->EnableDebugging)
+			{
+				const char* argv[2] = {
+					"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=MonoDebugger.log",
+					"--soft-breakpoints"
+				};
+
+				mono_jit_parse_options(2, (char**)argv);
+				mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+			}
+
 			MonoDomain* rootDomain = mono_jit_init("NutScriptRuntime");
 			NT_CORE_ASSERT(rootDomain, "Initializing mono-jit failed");
 
