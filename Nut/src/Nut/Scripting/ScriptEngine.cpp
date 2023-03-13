@@ -15,6 +15,7 @@
 #include "Nut/Scene/Entity.h"
 #include "Nut/Core/Application.h"
 #include "Nut/Core/Timer.h"
+#include "Nut/Core/FileSystem.h"
 
 
 namespace Nut {
@@ -289,39 +290,13 @@ namespace Nut {
 		return nullptr;
 	}
 
-	// TODO: Implement proper FILE API
-	char* ReadBytes(const std::string& filepath, uint32_t* outSize)
+	MonoAssembly* ScriptEngine::LoadMonoAssembly(const std::filesystem::path& assemblyPath, bool loadPDB)
 	{
-		std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
-
-		NT_CORE_ASSERT(stream, "");
-
-		std::streampos end = stream.tellg();
-		stream.seekg(0, std::ios::beg);
-		uint32_t size = end - stream.tellg();
-
-		if (size == 0)
-		{
-			// File is empty
-			return nullptr;
-		}
-
-		char* buffer = new char[size];
-		stream.read((char*)buffer, size);
-		stream.close();
-
-		*outSize = size;
-		return buffer;
-	}
-
-	MonoAssembly* ScriptEngine::LoadMonoAssembly(const std::string& assemblyPath, bool loadPDB)
-	{
-		uint32_t fileSize = 0;
-		char* fileData = ReadBytes(assemblyPath, &fileSize);
+		ScopedBuffer fileData = FileSystem::ReadFileBinary(assemblyPath);
 
 		// NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
 		MonoImageOpenStatus status;
-		MonoImage* image = mono_image_open_from_data_full(fileData, fileSize, 1, &status, 0);
+		MonoImage* image = mono_image_open_from_data_full(fileData.As<char>(), fileData.Size(), 1, &status, 0);
 
 		if (status != MONO_IMAGE_OK)
 		{
@@ -336,18 +311,14 @@ namespace Nut {
 
 			if (std::filesystem::exists(pdbPath))
 			{
-				uint32_t pdbFileSize = 0;
-				char* pdbFileData = ReadBytes(pdbPath.string(), &pdbFileSize);
-				mono_debug_open_image_from_memory(image, (const mono_byte*)pdbFileData, pdbFileSize);
+				ScopedBuffer pdbFileData = FileSystem::ReadFileBinary(pdbPath.string());
+				mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.Size());
 				NT_CORE_INFO("Loaded PDB {}", pdbPath);
-				delete[] pdbFileData;
 			}
 		}
 
-		MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPath.c_str(), &status, 0);
+		MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPath.string().c_str(), &status, 0);
 		mono_image_close(image);
-
-		delete[] fileData;
 
 		return assembly;
 	}

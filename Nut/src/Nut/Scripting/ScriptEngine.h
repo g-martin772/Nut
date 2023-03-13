@@ -92,7 +92,7 @@ namespace Nut {
 		static void InitMono();
 		static void ShutdownMono();
 
-		static MonoAssembly* LoadMonoAssembly(const std::string& assemblyPath, bool loadPDB = false);
+		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false);
 		static void LoadEntityClasses(MonoAssembly* assembly);
 
 		static MonoClass* GetClassInAssembly(MonoAssembly* assembly, const char* namespaceName, const char* className);
