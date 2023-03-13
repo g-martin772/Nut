@@ -24,21 +24,21 @@ namespace Sandbox
 
             m_Transform.Translation = new Vector3(m_Player.GetComponent<TransformComponent>().Translation.XY, DistanceFromPlayer);
 
-            float speed = 1.0f;
-            Vector3 velocity = Vector3.Zero;
+            //float speed = 1.0f;
+            //Vector3 velocity = Vector3.Zero;
 
-            if (Input.IsKeyDown(Key.W))
-                velocity.Y = 1.0f;
-            else if (Input.IsKeyDown(Key.S))
-                velocity.Y = -1.0f;
-            if (Input.IsKeyDown(Key.A))
-                velocity.X = -1.0f;
-            else if (Input.IsKeyDown(Key.D))
-                velocity.X = 1.0f;
-            velocity *= speed;
-            Vector3 translation = m_Transform.Translation;
-            translation += velocity * ts;
-            m_Transform.Translation = translation;
+            //if (Input.IsKeyDown(Key.W))
+            //    velocity.Y = 1.0f;
+            //else if (Input.IsKeyDown(Key.S))
+            //    velocity.Y = -1.0f;
+            //if (Input.IsKeyDown(Key.A))
+            //    velocity.X = -1.0f;
+            //else if (Input.IsKeyDown(Key.D))
+            //    velocity.X = 1.0f;
+            //velocity *= speed;
+            //Vector3 translation = m_Transform.Translation;
+            //translation += velocity * ts;
+            //m_Transform.Translation = translation;
         }
     }
 

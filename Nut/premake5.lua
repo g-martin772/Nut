@@ -44,6 +44,7 @@ project "Nut"
         "%{IncludeDir.shaderc}",
         "%{IncludeDir.Box2D}",
 		"%{IncludeDir.mono}",
+        "%{IncludeDir.FileWatch}",
     }
 
     links{

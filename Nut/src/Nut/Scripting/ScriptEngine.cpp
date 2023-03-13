@@ -9,6 +9,12 @@
 #include "mono/metadata/object.h"
 #include "../Scene/Entity.h"
 
+#include <filewatch/FileWatch.h>
+
+#include "Nut/Core/Application.h"
+#include "Nut/Core/Timer.h"
+
+
 namespace Nut {
 
 	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
@@ -63,9 +69,28 @@ namespace Nut {
 		std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, Ref<ScriptEntity>> EntityInstances;
 		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
+
+		Scope<filewatch::FileWatch<std::string>> AppAssemblyFileWatcher;
+		bool AssemblyReloadPending = false;
+
+		std::filesystem::path CoreAssemblyFilepath;
+		std::filesystem::path AppAssemblyFilepath;
 	};
 
 	static ScrptingEngineData* s_Data;
+
+	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event change_type)
+	{
+		if (!s_Data->AssemblyReloadPending && change_type == filewatch::Event::modified)
+		{
+			s_Data->AssemblyReloadPending = true;
+
+			Application::Get().SubmitToMainThread([]() {
+				s_Data->AppAssemblyFileWatcher.reset();
+				ScriptEngine::ReloadAssembly();
+				});
+		}
+	}
 
 	void ScriptEngine::Init()
 	{
@@ -111,11 +136,18 @@ namespace Nut {
 		s_Data->AppDomain = mono_domain_create_appdomain("NutAppDomain", nullptr);
 		mono_domain_set(s_Data->AppDomain, true);
 
-		s_Data->CoreAssembly = LoadMonoAssembly("Assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll");
+		s_Data->CoreAssemblyFilepath = "Assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll";
+
+		s_Data->CoreAssembly = LoadMonoAssembly(s_Data->CoreAssemblyFilepath.string());
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
 
-		s_Data->GameAssembly = LoadMonoAssembly("resources/SandboxProject/bin/Sandbox/Sandbox.dll");
+		s_Data->AppAssemblyFilepath = "resources/SandboxProject/bin/Sandbox/Sandbox.dll";
+
+		s_Data->GameAssembly = LoadMonoAssembly(s_Data->AppAssemblyFilepath.string());
 		s_Data->GameAssemblyImage = mono_assembly_get_image(s_Data->GameAssembly);
+
+		s_Data->AppAssemblyFileWatcher = std::make_unique<filewatch::FileWatch<std::string>>(s_Data->AppAssemblyFilepath.string(), OnAppAssemblyFileSystemEvent);
+		s_Data->AssemblyReloadPending = false;
 		
 		ScriptApi::RegisterComponents();
 		ScriptApi::RegisterInternalCalls();

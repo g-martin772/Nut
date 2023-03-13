@@ -16,7 +16,17 @@
 namespace Nut {
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const char* name, uint32_t width, uint32_t height, ApplicationCommandLineArgs args) 
+	void Application::ExecuteMainThreadQueue()
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+
+		for (auto& func : m_MainThreadQueue)
+			func();
+
+		m_MainThreadQueue.clear();
+	}
+
+	Application::Application(const char* name, uint32_t width, uint32_t height, ApplicationCommandLineArgs args)
 		: m_CommandLineArgs(args)
 	{
 		NT_PROFILE_FUNCTION();
@@ -60,7 +70,15 @@ namespace Nut {
 		layer->OnAttach();
 	}
 
-	void Application::OnEvent(Event& e) {
+	void Application::SubmitToMainThread(const std::function<void()>& function)
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+
+		m_MainThreadQueue.emplace_back(function);
+	}
+
+	void Application::OnEvent(Event& e)
+	{
 		NT_PROFILE_FUNCTION();
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::WindoClose));
@@ -101,6 +119,8 @@ namespace Nut {
 			float time = (float)glfwGetTime(); // TODO Move this to platform to remove dependency
 			Timestep timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
+
+			ExecuteMainThreadQueue();
 
 			{
 				NT_PROFILE_SCOPE("RunLoop->LayerUpdates");

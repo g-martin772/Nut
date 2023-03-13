@@ -44,6 +44,8 @@ namespace Nut {
 		inline Window& GetWindow() { return *m_Window; }
 
 		ApplicationCommandLineArgs GetCommandLineArgs() const { return m_CommandLineArgs; }
+
+		void SubmitToMainThread(const std::function<void()>& function);
 	private:
 		Scope<Window> m_Window;
 		ApplicationCommandLineArgs m_CommandLineArgs;
@@ -54,6 +56,10 @@ namespace Nut {
 		LayerStack m_LayerStack;
 		static Application* s_Instance;
 		float m_LastFrameTime = 0.0f;
+
+		void ExecuteMainThreadQueue();
+		std::vector<std::function<void()>> m_MainThreadQueue;
+		std::mutex m_MainThreadQueueMutex;
 	private:
 		ImGuiLayer* m_ImGuiLayer;
 	};
