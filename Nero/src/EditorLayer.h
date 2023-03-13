@@ -32,6 +32,7 @@ namespace Nut {
 		void OnScenePlay();
 		void OnSceneSimulate();
 		void OnSceneStop();
+		void OnScenePause();
 
 		bool OnMouseButtonPressed(ButtonPressedEvent& e);
 
@@ -75,6 +76,6 @@ namespace Nut {
 		SceneState m_SceneState = SceneState::Edit;
 
 		//Editor resources
-		Ref<Texture2D> m_IconPlay, m_IconSimulate, m_IconStop;
+		Ref<Texture2D> m_IconPlay, m_IconPause, m_IconStep, m_IconSimulate, m_IconStop;
 	};																				// hi
 }

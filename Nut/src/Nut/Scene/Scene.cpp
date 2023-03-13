@@ -85,6 +85,11 @@ namespace Nut {
 		return Entity{};
 	}
 
+	void Scene::Step(int frames)
+	{
+		m_StepFrames = frames;
+	}
+
 	void Scene::OnRuntimeStart()
 	{
 		NT_CORE_INFO("Starting Scene");
@@ -121,45 +126,46 @@ namespace Nut {
 
 	void Scene::OnUpdateRuntime(Timestep ts)
 	{
-		// Update scripts
+		
+		if (!m_Paused || m_StepFrames-- > 0)
 		{
-			ScriptEngine::OnRuntimeUpdate(ts);
+			{ // Update scripts
+				ScriptEngine::OnRuntimeUpdate(ts);
 
-			auto view = m_Registry.view<ScriptComponent>();
-			for (auto e : view) {
-				Entity entity = { e, this };
-				ScriptEngine::OnUpdateEntity(entity, ts);
-			}
-
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc) {
-				if (!nsc.Instance)
-				{
-					nsc.Instance = nsc.InstantiateFunction();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
+				auto view = m_Registry.view<ScriptComponent>();
+				for (auto e : view) {
+					Entity entity = { e, this };
+					ScriptEngine::OnUpdateEntity(entity, ts);
 				}
 
-			nsc.Instance->OnUpdate(ts);
-				});
-		}
+				m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc) {
+					if (!nsc.Instance)
+					{
+						nsc.Instance = nsc.InstantiateFunction();
+						nsc.Instance->m_Entity = Entity{ entity, this };
+						nsc.Instance->OnCreate();
+					}
 
-		// Physics
-		{
-			const uint32_t velocityIterations = 6;
-			const uint32_t positionIterations = 2;
-			m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);
+					nsc.Instance->OnUpdate(ts);
+					});
+			} 
+			{ // Physics 
+				const uint32_t velocityIterations = 6;
+				const uint32_t positionIterations = 2;
+				m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);
 
-			auto view = m_Registry.view<RigidBody2DComponent>();
-			for (auto e : view) {
-				Entity entity = { e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+				auto view = m_Registry.view<RigidBody2DComponent>();
+				for (auto e : view) {
+					Entity entity = { e, this };
+					auto& transform = entity.GetComponent<TransformComponent>();
+					auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
-				b2Body* body = (b2Body*)rb2d.RuntimeBody;
-				const auto& pos = body->GetPosition();
-				transform.Translation.x = pos.x;
-				transform.Translation.y = pos.y;
-				transform.Rotation.z = body->GetAngle();
+					b2Body* body = (b2Body*)rb2d.RuntimeBody;
+					const auto& pos = body->GetPosition();
+					transform.Translation.x = pos.x;
+					transform.Translation.y = pos.y;
+					transform.Rotation.z = body->GetAngle();
+				}
 			}
 		}
 
@@ -204,7 +210,7 @@ namespace Nut {
 	void Scene::OnUpdateSimulation(Timestep ts, EditorCamera& camera)
 	{
 		// Physics
-		{
+		if(!m_Paused || m_StepFrames-- > 0) {
 			const int32_t velocityIterations = 6;
 			const int32_t positionIterations = 2;
 			m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);

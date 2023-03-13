@@ -7,10 +7,12 @@
 #include "mono/metadata/assembly.h"
 #include "mono/metadata/image.h"
 #include "mono/metadata/object.h"
-#include "../Scene/Entity.h"
+#include "mono/metadata/mono-debug.h"
+#include "mono/metadata/threads.h"
 
 #include <filewatch/FileWatch.h>
 
+#include "Nut/Scene/Entity.h"
 #include "Nut/Core/Application.h"
 #include "Nut/Core/Timer.h"
 
@@ -73,6 +75,8 @@ namespace Nut {
 		Scope<filewatch::FileWatch<std::string>> AppAssemblyFileWatcher;
 		bool AssemblyReloadPending = false;
 
+		bool EnableDebugging = true;
+
 		std::filesystem::path CoreAssemblyFilepath;
 		std::filesystem::path AppAssemblyFilepath;
 	};
@@ -123,6 +127,17 @@ namespace Nut {
 	{
 		mono_set_assemblies_path("mono/lib");
 
+		if (s_Data->EnableDebugging)
+		{
+			const char* argv[2] = {
+				"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=MonoDebugger.log",
+				"--soft-breakpoints"
+			};
+
+			mono_jit_parse_options(2, (char**)argv);
+			mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+		}
+
 		// Creating a root domain
 		if (!s_Data->RootDomain) {
 			MonoDomain* rootDomain = mono_jit_init("NutScriptRuntime");
@@ -130,7 +145,14 @@ namespace Nut {
 
 			// Store the root domain pointer
 			s_Data->RootDomain = rootDomain;
+
+			if (s_Data->EnableDebugging)
+				mono_debug_domain_create(s_Data->RootDomain);
+
+			mono_thread_set_main(mono_thread_current());
 		}
+
+
 
 		// Create an App Domain
 		s_Data->AppDomain = mono_domain_create_appdomain("NutAppDomain", nullptr);
@@ -138,12 +160,12 @@ namespace Nut {
 
 		s_Data->CoreAssemblyFilepath = "Assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll";
 
-		s_Data->CoreAssembly = LoadMonoAssembly(s_Data->CoreAssemblyFilepath.string());
+		s_Data->CoreAssembly = LoadMonoAssembly(s_Data->CoreAssemblyFilepath.string(), s_Data->EnableDebugging);
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
 
 		s_Data->AppAssemblyFilepath = "resources/SandboxProject/bin/Sandbox/Sandbox.dll";
 
-		s_Data->GameAssembly = LoadMonoAssembly(s_Data->AppAssemblyFilepath.string());
+		s_Data->GameAssembly = LoadMonoAssembly(s_Data->AppAssemblyFilepath.string(), s_Data->EnableDebugging);
 		s_Data->GameAssemblyImage = mono_assembly_get_image(s_Data->GameAssembly);
 
 		s_Data->AppAssemblyFileWatcher = std::make_unique<filewatch::FileWatch<std::string>>(s_Data->AppAssemblyFilepath.string(), OnAppAssemblyFileSystemEvent);
@@ -292,7 +314,7 @@ namespace Nut {
 		return buffer;
 	}
 
-	MonoAssembly* ScriptEngine::LoadMonoAssembly(const std::string& assemblyPath)
+	MonoAssembly* ScriptEngine::LoadMonoAssembly(const std::string& assemblyPath, bool loadPDB)
 	{
 		uint32_t fileSize = 0;
 		char* fileData = ReadBytes(assemblyPath, &fileSize);
@@ -305,6 +327,21 @@ namespace Nut {
 		{
 			NT_CORE_ERROR(mono_image_strerror(status));
 			return nullptr;
+		}
+
+		if (loadPDB)
+		{
+			std::filesystem::path pdbPath = assemblyPath;
+			pdbPath.replace_extension(".pdb");
+
+			if (std::filesystem::exists(pdbPath))
+			{
+				uint32_t pdbFileSize = 0;
+				char* pdbFileData = ReadBytes(pdbPath.string(), &pdbFileSize);
+				mono_debug_open_image_from_memory(image, (const mono_byte*)pdbFileData, pdbFileSize);
+				NT_CORE_INFO("Loaded PDB {}", pdbPath);
+				delete[] pdbFileData;
+			}
 		}
 
 		MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPath.c_str(), &status, 0);
@@ -509,18 +546,21 @@ namespace Nut {
 
 	void ScriptEntity::OnCreate()
 	{
-		mono_runtime_invoke(m_OnCreate, m_Instance, nullptr, nullptr);
+		MonoObject* exc;
+		mono_runtime_invoke(m_OnCreate, m_Instance, nullptr, &exc);
 	}
 
 	void ScriptEntity::OnDestroy()
 	{
-		mono_runtime_invoke(m_OnDestroy, m_Instance, nullptr, nullptr);
+		MonoObject* exc;
+		mono_runtime_invoke(m_OnDestroy, m_Instance, nullptr, &exc);
 	}
 
 	void ScriptEntity::OnUpdate(float ts)
 	{
 		void* timestep = &ts;
-		mono_runtime_invoke(m_OnUpdate, m_Instance, &timestep, nullptr);
+		MonoObject* exc;
+		mono_runtime_invoke(m_OnUpdate, m_Instance, &timestep, &exc);
 	}
 
 }
