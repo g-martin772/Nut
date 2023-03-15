@@ -3,8 +3,9 @@
 
 #include "yaml-cpp/yaml.h"
 #include "Nut/Scene/Entity.h"
-#include <Nut/Scene/Components.h>
-#include "../Scripting/ScriptEngine.h"
+#include "Nut/Scene/Components.h"
+#include "Nut/Scripting/ScriptEngine.h"
+#include "Nut/Project/Project.h"
 
 namespace YAML {
 
@@ -464,7 +465,9 @@ namespace Nut {
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
 					if (spriteRendererComponent["Texture"].as<std::string>() != "none") {
-						src.Texture = Texture2D::Create(spriteRendererComponent["Texture"].as<std::string>());
+						std::string texturePath = spriteRendererComponent["TexturePath"].as<std::string>();
+						auto path = Project::GetAssetFileSystemPath(texturePath);
+						src.Texture = Texture2D::Create(path.string());
 					}
 					src.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
 				}

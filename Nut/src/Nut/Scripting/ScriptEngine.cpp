@@ -16,6 +16,7 @@
 #include "Nut/Core/Application.h"
 #include "Nut/Core/Timer.h"
 #include "Nut/Core/FileSystem.h"
+#include "../Project/Project.h"
 
 
 namespace Nut {
@@ -164,20 +165,6 @@ namespace Nut {
 		s_Data->CoreAssembly = LoadMonoAssembly(s_Data->CoreAssemblyFilepath.string(), s_Data->EnableDebugging);
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
 
-		s_Data->AppAssemblyFilepath = "resources/SandboxProject/bin/Sandbox/Sandbox.dll";
-
-		s_Data->GameAssembly = LoadMonoAssembly(s_Data->AppAssemblyFilepath.string(), s_Data->EnableDebugging);
-		s_Data->GameAssemblyImage = mono_assembly_get_image(s_Data->GameAssembly);
-
-		s_Data->AppAssemblyFileWatcher = std::make_unique<filewatch::FileWatch<std::string>>(s_Data->AppAssemblyFilepath.string(), OnAppAssemblyFileSystemEvent);
-		s_Data->AssemblyReloadPending = false;
-		
-		ScriptApi::RegisterComponents();
-		ScriptApi::RegisterInternalCalls();
-
-		s_Data->EntityClasses.clear();
-		LoadEntityClasses(s_Data->GameAssembly);
-
 		s_Data->EntityCLass = std::make_shared<ScriptClass>("Nut.Scene", "Entity");
 	}
 
@@ -186,8 +173,8 @@ namespace Nut {
 		mono_domain_set(mono_get_root_domain(), false);
 		mono_domain_unload(s_Data->AppDomain);
 		s_Data->AppDomain = nullptr;
-		/*mono_jit_cleanup(s_Data->RootDomain);
-		s_Data->RootDomain = nullptr;*/
+		mono_jit_cleanup(s_Data->RootDomain);
+		s_Data->RootDomain = nullptr;
 	}
 
 	std::unordered_map<std::string, Nut::Ref<Nut::ScriptClass>> ScriptEngine::GetEntityClasses()
@@ -245,26 +232,22 @@ namespace Nut {
 
 	void ScriptEngine::ReloadAssembly()
 	{
-		/*mono_domain_set(mono_get_root_domain(), false);
+		mono_assembly_close(s_Data->GameAssembly);
+		mono_image_close(s_Data->GameAssemblyImage);
 
-		mono_domain_unload(s_Data->AppDomain);
-
-		s_Data->AppDomain = mono_domain_create_appdomain("HazelScriptRuntime", nullptr);
-		mono_domain_set(s_Data->AppDomain, true);
-
-		s_Data->CoreAssembly = LoadMonoAssembly("Assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll");
-		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
-
-		s_Data->GameAssembly = LoadMonoAssembly("resources/SandboxProject/bin/Sandbox/Sandbox.dll");
+		s_Data->AppAssemblyFilepath = Project::GetProjectDirectory() / "bin/Sandbox/Sandbox.dll";
+		auto path = s_Data->AppAssemblyFilepath;
+		s_Data->GameAssembly = LoadMonoAssembly(s_Data->AppAssemblyFilepath.string(), s_Data->EnableDebugging);
 		s_Data->GameAssemblyImage = mono_assembly_get_image(s_Data->GameAssembly);
 
-		LoadEntityClasses(s_Data->GameAssembly);
+		s_Data->AppAssemblyFileWatcher = std::make_unique<filewatch::FileWatch<std::string>>(s_Data->AppAssemblyFilepath.string(), OnAppAssemblyFileSystemEvent);
+		s_Data->AssemblyReloadPending = false;
 
 		ScriptApi::RegisterComponents();
+		ScriptApi::RegisterInternalCalls();
 
-		s_Data->EntityCLass = std::make_shared<ScriptClass>("Hazel", "Entity");*/
-		ShutdownMono();
-		InitMono();
+		s_Data->EntityClasses.clear();
+		LoadEntityClasses(s_Data->GameAssembly);
 	}
 
 	Ref<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
@@ -317,7 +300,7 @@ namespace Nut {
 			}
 		}
 
-		MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPath.string().c_str(), &status, 0);
+		MonoAssembly* assembly = mono_assembly_load_from_full(image, (const char*)assemblyPath.c_str(), &status, 0);
 		mono_image_close(image);
 
 		return assembly;

@@ -34,6 +34,11 @@ namespace Nut {
 		void OnSceneStop();
 		void OnScenePause();
 
+		void NewProject();
+		bool OpenProject();
+		void OpenProject(const std::filesystem::path& path);
+		void SaveProject();
+
 		bool OnMouseButtonPressed(ButtonPressedEvent& e);
 
 		// UI Panels
@@ -65,7 +70,7 @@ namespace Nut {
 
 		//Panels
 		SceneHierachyPanel m_SceneHierachyPanel;
-		ContentBrowserPanel m_ContentBrowserPanel;
+		Scope<ContentBrowserPanel> m_ContentBrowserPanel;
 
 
 		//Scene State
