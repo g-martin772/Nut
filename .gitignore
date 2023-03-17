@@ -1,5 +1,6 @@
 ﻿.vscode/
 .vs/
+.idea/
 int/
 bin/
 bin-int/
