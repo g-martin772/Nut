@@ -19,3 +19,6 @@
 [submodule "Nut/vendor/Box2D"]
 	path = Nut/vendor/Box2D
 	url = https://github.com/TheCherno/box2d.git
+[submodule "Nut/vendor/filewatch/filewatch"]
+	path = Nut/vendor/filewatch/filewatch
+	url = https://github.com/ThomasMonkman/filewatch

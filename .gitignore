@@ -1,5 +1,6 @@
 ﻿.vscode/
 .vs/
+.idea/
 int/
 bin/
 bin-int/
@@ -17,4 +18,4 @@ Nut/vendor/GLAD/bin-int/
 
 !vendor/premake/bin/
 
-/Nut
+Nut/vendor/GLAD

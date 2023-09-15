@@ -10,7 +10,7 @@
 #include "mono/metadata/mono-debug.h"
 #include "mono/metadata/threads.h"
 
-#include <filewatch/FileWatch.h>
+#include <filewatch/FileWatch.hpp>
 
 #include "Nut/Scene/Entity.h"
 #include "Nut/Core/Application.h"
