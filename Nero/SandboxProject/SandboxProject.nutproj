@@ -1,0 +1,5 @@
+Project:
+  Name: SandboxProject
+  StartScene: scenes/physics-advanced.nut
+  AssetDirectory: Assets
+  ScriptModulePath: bin/Sandbox/Sandbox.dll

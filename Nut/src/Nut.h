@@ -27,6 +27,7 @@
 #include "Nut/Scene/ScriptableEntity.h"
 #include "Nut/Scene/SceneSerializer.h"
 #include "Nut/Utils/PlatformUtils.h"
+#include "Nut/Project/Project.h"
 
 #include "imgui_internal.h"
 #include "imgui.h"

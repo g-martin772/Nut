@@ -2,13 +2,11 @@
 
 #include <filesystem>
 #include "Nut/Scripting/ScriptEngine.h"
+#include "Nut/Project/Project.h"
 
 #define PROFILE_SCOPE(name) Timer timer##__LINE__(name, [&](ProfileResult profileResult) { m_ProfileResults.push_back(profileResult); })
 
 namespace Nut {
-
-	extern const std::filesystem::path g_AssetPath;
-
 	void EditorLayer::OnAttach()
 	{
 		NT_PROFILE_FUNCTION();
@@ -24,12 +22,19 @@ namespace Nut {
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierachyPanel.SetContext(m_ActiveScene);
 
+		ScriptEngine::Init();
+
 		auto commandLineArgs = Application::Get().GetCommandLineArgs();
 		if (commandLineArgs.Count > 1)
 		{
-			auto sceneFilePath = commandLineArgs[1];
-			NT_INFO("{0}", sceneFilePath);
-			OpenScene(sceneFilePath);
+			auto projectFilePath = commandLineArgs[1];
+			OpenProject(projectFilePath);
+		}
+		else
+		{
+			// TODO: prompt the user to select a directory
+			if (!OpenProject())
+				Application::Get().Close();
 		}
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
@@ -272,7 +277,7 @@ namespace Nut {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				const wchar_t* path = (const wchar_t*)payload->Data;
-				OpenScene(std::filesystem::path(g_AssetPath) / path);
+				OpenScene(path);
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -330,7 +335,7 @@ namespace Nut {
 		UI_Toolbar();
 
 		m_SceneHierachyPanel.OnImGuiRender();
-		m_ContentBrowserPanel.OnImGuiRender();
+		m_ContentBrowserPanel->OnImGuiRender();
 
 
 		ImGui::End(); //Dockspace
@@ -713,6 +718,37 @@ namespace Nut {
 			return;
 
 		m_ActiveScene->SetPaused(true);
+	}
+
+	void EditorLayer::NewProject()
+	{
+		Project::New();
+	}
+
+	void EditorLayer::OpenProject(const std::filesystem::path& path)
+	{
+		if (Project::Load(path))
+		{
+			ScriptEngine::ReloadAssembly();
+			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetConfig().StartScene);
+			OpenScene(startScenePath);
+			m_ContentBrowserPanel = std::make_unique<ContentBrowserPanel>();
+		}
+	}
+
+	bool EditorLayer::OpenProject()
+	{
+		std::string filepath = FileDialog::OpenFile("Nut Project (*.nutproj)\0*.nutproj\0");
+		if (filepath.empty())
+			return false;
+
+		OpenProject(filepath);
+		return true;
+	}
+
+	void EditorLayer::SaveProject()
+	{
+		// TODO: SaveProject
 	}
 
 	void EditorLayer::OnDuplicateEntity()

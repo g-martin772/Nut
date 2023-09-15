@@ -3,15 +3,21 @@ project "Sandbox"
     language "C#"
 	dotnetframework "4.7.2"
 
-    targetdir ("%{wks.location}/bin/%{prj.name}")
-    objdir ("%{wks.location}/int/%{prj.name}")
+	configurations {
+        "Debug",
+        "Release",
+        "Dist"
+    }
+
+    targetdir ("../bin/%{prj.name}")
+    objdir ("../int/%{prj.name}")
 
     files {
         "src/**.cs",
     }
 
     links {
-        "../../../../Nero/assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll"
+        "../bin/%{prj.name}/Nut-ScriptCore.dll"
     }
 
 	filter "configurations:Debug"

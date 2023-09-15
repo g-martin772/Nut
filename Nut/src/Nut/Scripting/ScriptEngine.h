@@ -34,7 +34,7 @@ namespace Nut {
 	struct ScriptFieldInstance {
 		ScriptField Field;
 
-		ScriptFieldInstance()
+		ScriptFieldInstance(): Field()
 		{
 			memset(m_Buffer, 0, sizeof(m_Buffer));
 		}
@@ -43,7 +43,7 @@ namespace Nut {
 		T GetValue()
 		{
 			static_assert(sizeof(T) <= 16, "Type too large!");
-			return *(T*)m_Buffer;
+			return *reinterpret_cast<T*>(m_Buffer);
 		}
 
 		template<typename T>
@@ -74,11 +74,11 @@ namespace Nut {
 		static void OnRuntimeUpdate(float ts);
 		static void OnRuntimeStop();
 
-		static bool ScriptEngine::EntityClassExists(const std::string& fullClassName);
+		static bool EntityClassExists(const std::string& fullClassName);
 		static std::unordered_map<std::string, Ref<ScriptClass>> GetEntityClasses();
 		static Scene* GetCurrentScene();
 		static MonoImage* GetCoreAssemblyImage();
-		static Ref<ScriptObject> GetEntityScriptInstance(UUID entityID);
+		static Ref<ScriptObject> GetEntityScriptInstance(UUID entityId);
 		static Ref<ScriptClass> GetEntityClass(const std::string& name);
 		static ScriptFieldMap& GetScriptFieldMap(Entity entity);
 		static MonoObject* GetManagedInstance(UUID uuid);
@@ -92,7 +92,7 @@ namespace Nut {
 		static void InitMono();
 		static void ShutdownMono();
 
-		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false);
+		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath, bool loadPdb = false);
 		static void LoadEntityClasses(MonoAssembly* assembly);
 
 		static MonoClass* GetClassInAssembly(MonoAssembly* assembly, const char* namespaceName, const char* className);
@@ -103,13 +103,13 @@ namespace Nut {
 
 	class ScriptClass {
 	public:
-		ScriptClass(std::string namespaceName, std::string className);
+		ScriptClass(const std::string& namespaceName, const std::string& className);
 		~ScriptClass();
 
-		inline MonoClass* GetClass() const { return m_Class; }
-		inline std::string GetName() const { return m_Name; }
+		MonoClass* GetClass() const { return m_Class; }
+		std::string GetName() const { return m_Name; }
 
-		MonoMethod* GetMethod(std::string methodName, uint32_t parameterCount) const;
+		MonoMethod* GetMethod(const std::string& methodName, const uint32_t parameterCount) const;
 		const std::map<std::string, ScriptField>& GetFields() const { return m_Fields; }
 	private:
 		std::string m_Namespace, m_Name;
@@ -128,21 +128,21 @@ namespace Nut {
 		ScriptObject(const Ref<ScriptClass>& klass, int paramCount, void** params);
 		virtual ~ScriptObject();
 
-		inline const Ref<ScriptClass>& GetClass() const { return m_Class; }
+		const Ref<ScriptClass>& GetClass() const { return m_Class; }
 
-		void Invoke(std::string methodName, uint32_t parameterCount, void** params) const;
+		void Invoke(const std::string& methodName, uint32_t parameterCount, void** params) const;
 
-		Ref<ScriptClass> GetScriptClass() { return m_Class; }
+		Ref<ScriptClass> GetScriptClass() const { return m_Class; }
 
 		template<typename T>
 		T GetFieldValue(const std::string& name)
 		{
 			static_assert(sizeof(T) <= 16, "Type too large!");
-			bool success = GetFieldValueInternal(name, s_FieldValueBuffer);
+			const bool success = GetFieldValueInternal(name, s_FieldValueBuffer);
 			if (!success)
 				return T();
 
-			return *(T*)s_FieldValueBuffer;
+			return *reinterpret_cast<T*>(s_FieldValueBuffer);
 		}
 
 		template<typename T>
@@ -153,11 +153,11 @@ namespace Nut {
 			SetFieldValueInternal(name, &value);
 		}
 
-		MonoObject* GetManagedObject() { return m_Instance; }
+		MonoObject* GetManagedObject() const { return m_Instance; }
 
 	private:
-		bool GetFieldValueInternal(const std::string& name, void* buffer);
-		bool SetFieldValueInternal(const std::string& name, const void* value);
+		bool GetFieldValueInternal(const std::string& name, void* buffer) const;
+		bool SetFieldValueInternal(const std::string& name, const void* value) const;
 	protected:
 		ScriptObject();
 		const Ref<ScriptClass>& m_Class;
@@ -175,11 +175,11 @@ namespace Nut {
 	public:
 		ScriptEntity(const Ref<ScriptClass>& klass);
 		ScriptEntity(const Ref<ScriptClass>& klass, int paramCount, void** params);
-		~ScriptEntity();
+		~ScriptEntity() override;
 
-		void OnCreate();
-		void OnDestroy();
-		void OnUpdate(float ts);
+		void OnCreate() const;
+		void OnDestroy() const;
+		void OnUpdate(float ts) const;
 	private:
 		MonoMethod* m_OnCreate;
 		MonoMethod* m_OnDestroy;

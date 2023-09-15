@@ -42,7 +42,6 @@ namespace Nut {
 		m_Window->SetVSync(false);
 
 		Renderer::Init();
-		ScriptEngine::Init();
 
 		{
 			NT_PROFILE_FUNCTION();

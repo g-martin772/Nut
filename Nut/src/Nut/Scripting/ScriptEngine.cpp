@@ -16,6 +16,7 @@
 #include "Nut/Core/Application.h"
 #include "Nut/Core/Timer.h"
 #include "Nut/Core/FileSystem.h"
+#include "../Project/Project.h"
 
 
 namespace Nut {
@@ -55,7 +56,7 @@ namespace Nut {
 		return it->second;
 	}
 	
-	struct ScrptingEngineData {
+	struct ScriptingEngineData {
 		MonoDomain* RootDomain = nullptr;
 		MonoDomain* AppDomain = nullptr;
 
@@ -82,11 +83,11 @@ namespace Nut {
 		std::filesystem::path AppAssemblyFilepath;
 	};
 
-	static ScrptingEngineData* s_Data;
+	static ScriptingEngineData* s_Data;
 
-	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event change_type)
+	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event changeType)
 	{
-		if (!s_Data->AssemblyReloadPending && change_type == filewatch::Event::modified)
+		if (!s_Data->AssemblyReloadPending && changeType == filewatch::Event::modified)
 		{
 			s_Data->AssemblyReloadPending = true;
 
@@ -99,7 +100,7 @@ namespace Nut {
 
 	void ScriptEngine::Init()
 	{
-		s_Data = new ScrptingEngineData;
+		s_Data = new ScriptingEngineData;
 		InitMono();
 	}
 
@@ -128,19 +129,19 @@ namespace Nut {
 	{
 		mono_set_assemblies_path("mono/lib");
 
-		if (s_Data->EnableDebugging)
-		{
-			const char* argv[2] = {
-				"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=MonoDebugger.log",
-				"--soft-breakpoints"
-			};
-
-			mono_jit_parse_options(2, (char**)argv);
-			mono_debug_init(MONO_DEBUG_FORMAT_MONO);
-		}
-
 		// Creating a root domain
 		if (!s_Data->RootDomain) {
+			if (s_Data->EnableDebugging)
+			{
+				const char* argv[2] = {
+					"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=MonoDebugger.log",
+					"--soft-breakpoints"
+				};
+
+				mono_jit_parse_options(2, const_cast<char**>(argv));
+				mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+			}
+
 			MonoDomain* rootDomain = mono_jit_init("NutScriptRuntime");
 			NT_CORE_ASSERT(rootDomain, "Initializing mono-jit failed");
 
@@ -164,20 +165,6 @@ namespace Nut {
 		s_Data->CoreAssembly = LoadMonoAssembly(s_Data->CoreAssemblyFilepath.string(), s_Data->EnableDebugging);
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
 
-		s_Data->AppAssemblyFilepath = "resources/SandboxProject/bin/Sandbox/Sandbox.dll";
-
-		s_Data->GameAssembly = LoadMonoAssembly(s_Data->AppAssemblyFilepath.string(), s_Data->EnableDebugging);
-		s_Data->GameAssemblyImage = mono_assembly_get_image(s_Data->GameAssembly);
-
-		s_Data->AppAssemblyFileWatcher = std::make_unique<filewatch::FileWatch<std::string>>(s_Data->AppAssemblyFilepath.string(), OnAppAssemblyFileSystemEvent);
-		s_Data->AssemblyReloadPending = false;
-		
-		ScriptApi::RegisterComponents();
-		ScriptApi::RegisterInternalCalls();
-
-		s_Data->EntityClasses.clear();
-		LoadEntityClasses(s_Data->GameAssembly);
-
 		s_Data->EntityCLass = std::make_shared<ScriptClass>("Nut.Scene", "Entity");
 	}
 
@@ -186,8 +173,8 @@ namespace Nut {
 		mono_domain_set(mono_get_root_domain(), false);
 		mono_domain_unload(s_Data->AppDomain);
 		s_Data->AppDomain = nullptr;
-		/*mono_jit_cleanup(s_Data->RootDomain);
-		s_Data->RootDomain = nullptr;*/
+		mono_jit_cleanup(s_Data->RootDomain);
+		s_Data->RootDomain = nullptr;
 	}
 
 	std::unordered_map<std::string, Nut::Ref<Nut::ScriptClass>> ScriptEngine::GetEntityClasses()
@@ -211,12 +198,12 @@ namespace Nut {
 		if (EntityClassExists(sc.Name)) 
 		{
 			void* id = &entity.GetComponent<IDComponent>().ID;
-			Ref<ScriptEntity> script = std::make_shared<ScriptEntity>(s_Data->EntityClasses[sc.Name], 1, &id);
-			s_Data->EntityInstances[*(UUID*)id] = script;
+			const Ref<ScriptEntity> script = std::make_shared<ScriptEntity>(s_Data->EntityClasses[sc.Name], 1, &id);
+			s_Data->EntityInstances[*static_cast<UUID*>(id)] = script;
 
-			if (s_Data->EntityScriptFields.find(*(UUID*)id) != s_Data->EntityScriptFields.end())
+			if (s_Data->EntityScriptFields.find(*static_cast<UUID*>(id)) != s_Data->EntityScriptFields.end())
 			{
-				const ScriptFieldMap& fieldMap = s_Data->EntityScriptFields.at(*(UUID*)id);
+				const ScriptFieldMap& fieldMap = s_Data->EntityScriptFields.at(*static_cast<UUID*>(id));
 				for (const auto& [name, fieldInstance] : fieldMap)
 					script->SetFieldValueInternal(name, fieldInstance.m_Buffer);
 			}
@@ -225,46 +212,42 @@ namespace Nut {
 		}
 	}
 
-	void ScriptEngine::OnUpdateEntity(Entity entity, Timestep ts)
+	void ScriptEngine::OnUpdateEntity(Entity entity, const Timestep ts)
 	{
 		UUID id = entity.GetComponent<IDComponent>().ID;
 		NT_CORE_ASSERT(s_Data->EntityInstances.find(id) != s_Data->EntityInstances.end(), "Script not found");
-			
-		Ref<ScriptEntity> script = s_Data->EntityInstances[id];
+
+		const Ref<ScriptEntity> script = s_Data->EntityInstances[id];
 		script->OnUpdate(ts);
 	}
 
 	void ScriptEngine::OnDestroyEntity(Entity entity)
 	{
-		UUID id = entity.GetComponent<IDComponent>().ID;
+		const UUID id = entity.GetComponent<IDComponent>().ID;
 		NT_CORE_ASSERT(s_Data->EntityInstances.find(id) != s_Data->EntityInstances.end(), "Script not found");
 
-		Ref<ScriptEntity> script = s_Data->EntityInstances[id];
+		const Ref<ScriptEntity> script = s_Data->EntityInstances[id];
 		script->OnDestroy();
 	}
 
 	void ScriptEngine::ReloadAssembly()
 	{
-		/*mono_domain_set(mono_get_root_domain(), false);
+		mono_assembly_close(s_Data->GameAssembly);
+		mono_image_close(s_Data->GameAssemblyImage);
 
-		mono_domain_unload(s_Data->AppDomain);
-
-		s_Data->AppDomain = mono_domain_create_appdomain("HazelScriptRuntime", nullptr);
-		mono_domain_set(s_Data->AppDomain, true);
-
-		s_Data->CoreAssembly = LoadMonoAssembly("Assets/Scripts/Nut-ScriptCore/Nut-ScriptCore.dll");
-		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
-
-		s_Data->GameAssembly = LoadMonoAssembly("resources/SandboxProject/bin/Sandbox/Sandbox.dll");
+		s_Data->AppAssemblyFilepath = Project::GetProjectDirectory() / "bin/Sandbox/Sandbox.dll";
+		auto path = s_Data->AppAssemblyFilepath;
+		s_Data->GameAssembly = LoadMonoAssembly(s_Data->AppAssemblyFilepath.string(), s_Data->EnableDebugging);
 		s_Data->GameAssemblyImage = mono_assembly_get_image(s_Data->GameAssembly);
 
-		LoadEntityClasses(s_Data->GameAssembly);
+		s_Data->AppAssemblyFileWatcher = std::make_unique<filewatch::FileWatch<std::string>>(s_Data->AppAssemblyFilepath.string(), OnAppAssemblyFileSystemEvent);
+		s_Data->AssemblyReloadPending = false;
 
 		ScriptApi::RegisterComponents();
+		ScriptApi::RegisterInternalCalls();
 
-		s_Data->EntityCLass = std::make_shared<ScriptClass>("Hazel", "Entity");*/
-		ShutdownMono();
-		InitMono();
+		s_Data->EntityClasses.clear();
+		LoadEntityClasses(s_Data->GameAssembly);
 	}
 
 	Ref<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
@@ -279,18 +262,18 @@ namespace Nut {
 	{
 		NT_CORE_ASSERT(entity, "Entity was null");
 
-		UUID entityID = entity.GetComponent<IDComponent>().ID;
-		return s_Data->EntityScriptFields[entityID];
+		const UUID entityId = entity.GetComponent<IDComponent>().ID;
+		return s_Data->EntityScriptFields[entityId];
 	}
 
-	MonoObject* ScriptEngine::GetManagedInstance(UUID uuid)
+	MonoObject* ScriptEngine::GetManagedInstance(const UUID uuid)
 	{
 		if(s_Data->EntityInstances.find(uuid) != s_Data->EntityInstances.end())
 			return s_Data->EntityInstances.at(uuid)->GetManagedObject();
 		return nullptr;
 	}
 
-	MonoAssembly* ScriptEngine::LoadMonoAssembly(const std::filesystem::path& assemblyPath, bool loadPDB)
+	MonoAssembly* ScriptEngine::LoadMonoAssembly(const std::filesystem::path& assemblyPath, const bool loadPdb)
 	{
 		ScopedBuffer fileData = FileSystem::ReadFileBinary(assemblyPath);
 
@@ -304,7 +287,7 @@ namespace Nut {
 			return nullptr;
 		}
 
-		if (loadPDB)
+		if (loadPdb)
 		{
 			std::filesystem::path pdbPath = assemblyPath;
 			pdbPath.replace_extension(".pdb");
@@ -317,7 +300,7 @@ namespace Nut {
 			}
 		}
 
-		MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPath.string().c_str(), &status, 0);
+		MonoAssembly* assembly = mono_assembly_load_from_full(image, reinterpret_cast<const char*>(assemblyPath.c_str()), &status, 0);
 		mono_image_close(image);
 
 		return assembly;
@@ -327,9 +310,9 @@ namespace Nut {
 	{
 		MonoImage* image = mono_assembly_get_image(assembly);
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+		const int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
 
-		ScriptClass entityClass("Nut.Scene", "Entity");
+		const ScriptClass entityClass("Nut.Scene", "Entity");
 
 		NT_CORE_INFO("Script Classes found and loaded:");
 		for (int32_t i = 0; i < numTypes; i++)
@@ -341,9 +324,8 @@ namespace Nut {
 			const char* className = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
 			std::string fullName = fmt::format("{}.{}", nameSpace, className);
 
-			ScriptClass klass(nameSpace, className);
-
-			if (mono_class_is_subclass_of(klass.GetClass(), entityClass.GetClass(), false) && std::string(className) != "Entity") {
+			if (ScriptClass klass(nameSpace, className);
+				mono_class_is_subclass_of(klass.GetClass(), entityClass.GetClass(), false) && std::string(className) != "Entity") {
 				s_Data->EntityClasses[fullName] = std::make_shared<ScriptClass>(nameSpace, className);
 			}
 			else continue;
@@ -354,11 +336,10 @@ namespace Nut {
 			while (MonoClassField* field = mono_class_get_fields(s_Data->EntityClasses[fullName]->GetClass(), &iterator))
 			{
 				const char* fieldName = mono_field_get_name(field);
-				uint32_t flags = mono_field_get_flags(field);
-				if (flags & 0x0006 /*FIELD_ATTRIBUTE_PUBLIC*/)
+				if (const uint32_t flags = mono_field_get_flags(field); flags & 0x0006 /*FIELD_ATTRIBUTE_PUBLIC*/)
 				{
 					MonoType* type = mono_field_get_type(field);
-					ScriptFieldType fieldType = MonoTypeToScriptFieldType(type);
+					const ScriptFieldType fieldType = MonoTypeToScriptFieldType(type);
 					NT_CORE_WARN("  {} ({})", fullName, Utils::ScriptFieldTypeToString(fieldType));
 
 					s_Data->EntityClasses[fullName]->m_Fields[fieldName] = { fieldType, fieldName, field };
@@ -398,17 +379,17 @@ namespace Nut {
 		return s_Data->EntityClasses.find(fullClassName) != s_Data->EntityClasses.end();
 	}
 
-	Ref<ScriptObject> ScriptEngine::GetEntityScriptInstance(UUID entityID)
+	Ref<ScriptObject> ScriptEngine::GetEntityScriptInstance(UUID entityId)
 	{
-		auto it = s_Data->EntityInstances.find(entityID);
+		auto it = s_Data->EntityInstances.find(entityId);
 		if (it == s_Data->EntityInstances.end())
 			return nullptr;
 
 		return it->second;
 	}
 
-	ScriptClass::ScriptClass(std::string namespaceName, std::string className)
-		: m_Name(className), m_Namespace(namespaceName)
+	ScriptClass::ScriptClass(const std::string& namespaceName, const std::string& className)
+		: m_Namespace(namespaceName), m_Name(className)
 	{
 		MonoClass* klass = mono_class_from_name(s_Data->CoreAssemblyImage, namespaceName.c_str(), className.c_str());
 		
@@ -424,7 +405,7 @@ namespace Nut {
 		//mono_free(m_Class);
 	}
 
-	MonoMethod* ScriptClass::GetMethod(std::string methodName, uint32_t parameterCount) const
+	MonoMethod* ScriptClass::GetMethod(const std::string& methodName, const uint32_t parameterCount) const
 	{
 		MonoMethod* method = mono_class_get_method_from_name(m_Class, methodName.c_str(), parameterCount);
 		NT_CORE_ASSERT(method, "Failed to load method");
@@ -448,7 +429,7 @@ namespace Nut {
 		mono_runtime_invoke(s_Data->EntityCLass->GetMethod(".ctor", 1), m_Instance, params, &exc);
 	}
 
-	bool ScriptObject::GetFieldValueInternal(const std::string& name, void* buffer)
+	bool ScriptObject::GetFieldValueInternal(const std::string& name, void* buffer) const
 	{
 		const auto& fields = m_Class->GetFields();
 		auto it = fields.find(name);
@@ -460,19 +441,19 @@ namespace Nut {
 		return true;
 	}
 
-	bool ScriptObject::SetFieldValueInternal(const std::string& name, const void* value)
+	bool ScriptObject::SetFieldValueInternal(const std::string& name, const void* value) const
 	{
 		const auto& fields = m_Class->GetFields();
-		auto it = fields.find(name);
+		const auto it = fields.find(name);
 		if (it == fields.end())
 			return false;
 
-		const ScriptField& field = it->second;
-		mono_field_set_value(m_Instance, field.ClassField, (void*)value);
+		const auto& [Type, Name, ClassField] = it->second;
+		mono_field_set_value(m_Instance, ClassField, const_cast<void*>(value));
 		return true;
 	}
 
-	void ScriptObject::Invoke(std::string methodName, uint32_t parameterCount, void** params) const
+	void ScriptObject::Invoke(const std::string& methodName, const uint32_t parameterCount, void** params) const
 	{
 		MonoMethod* method = m_Class->GetMethod(methodName, parameterCount);
 		MonoObject* exc;
@@ -498,7 +479,7 @@ namespace Nut {
 		m_OnUpdate = mono_object_get_virtual_method(m_Instance, m_OnUpdate);
 	}
 
-	ScriptEntity::ScriptEntity(const Ref<ScriptClass>& klass, int paramCount, void** params)
+	ScriptEntity::ScriptEntity(const Ref<ScriptClass>& klass, const int paramCount, void** params)
 		: ScriptObject(klass, paramCount, params)
 	{
 		m_OnCreate = s_Data->EntityCLass->GetMethod("OnCreate", 0);
@@ -515,19 +496,19 @@ namespace Nut {
 
 	}
 
-	void ScriptEntity::OnCreate()
+	void ScriptEntity::OnCreate() const
 	{
 		MonoObject* exc;
 		mono_runtime_invoke(m_OnCreate, m_Instance, nullptr, &exc);
 	}
 
-	void ScriptEntity::OnDestroy()
+	void ScriptEntity::OnDestroy() const
 	{
 		MonoObject* exc;
 		mono_runtime_invoke(m_OnDestroy, m_Instance, nullptr, &exc);
 	}
 
-	void ScriptEntity::OnUpdate(float ts)
+	void ScriptEntity::OnUpdate(float ts) const
 	{
 		void* timestep = &ts;
 		MonoObject* exc;

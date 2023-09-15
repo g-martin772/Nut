@@ -1,13 +1,12 @@
 #include "ContentBrowserPanel.h"
 
+#include "Nut.h"
+
 #include "imgui.h"
 
 namespace Nut {
-
-	// Make a project system stupid idot at one point
-	extern const std::filesystem::path g_AssetPath = "assets";
-
-	ContentBrowserPanel::ContentBrowserPanel() : m_CurrentDir(g_AssetPath)
+	ContentBrowserPanel::ContentBrowserPanel() 
+		: m_BaseDir(Project::GetAssetDirectory()), m_CurrentDir(m_BaseDir)
 	{
 		m_DirectoryIcon = Texture2D::Create("resources/icons/fileicons/DirectoryIcon.png");
 		m_FileIcon = Texture2D::Create("resources/icons/fileicons/FileIcon.png");
@@ -17,7 +16,7 @@ namespace Nut {
 	{
 		ImGui::Begin("Content Browser");
 
-		if (m_CurrentDir != g_AssetPath) {
+		if (m_CurrentDir != std::filesystem::path(m_BaseDir)) {
 			if (ImGui::Button("<-")) {
 				m_CurrentDir = m_CurrentDir.parent_path();
 			}
@@ -39,7 +38,7 @@ namespace Nut {
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDir))
 		{
 			const auto& path = directoryEntry.path();
-			auto relativePath = std::filesystem::relative(path, g_AssetPath);
+			std::filesystem::path relativePath(path);
 			std::string filenameString = relativePath.filename().string();
 
 			ImGui::PushID(filenameString.c_str());

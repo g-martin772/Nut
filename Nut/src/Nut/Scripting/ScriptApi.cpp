@@ -14,7 +14,7 @@
 namespace Nut {
 
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
-	#define NT_ADD_INTERNAL_CALL(name) mono_add_internal_call("Nut.InternalCalls::Native_" #name "", name);
+	#define NT_ADD_INTERNAL_CALL(name) mono_add_internal_call("Nut.InternalCalls::Native_" #name "", name)
 
 	#pragma region Console
 	static void Print(MonoString* text, int level)
@@ -33,18 +33,18 @@ namespace Nut {
 
 
 	#pragma region Entity
-	static bool Entity_HasComponent(UUID entityID, MonoReflectionType* componentType)
+	static bool Entity_HasComponent(const UUID entityId, MonoReflectionType* componentType)
 	{
-		Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityID);
+		const Entity entity = ScriptEngine::GetCurrentScene()->GetEntityByUUID(entityId);
 		
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
 		NT_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "Component type not found");
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
 	}
 
-	static MonoObject* GetScriptInstance(UUID entityID)
+	static MonoObject* GetScriptInstance(const UUID entityId)
 	{
-		return ScriptEngine::GetManagedInstance(entityID);
+		return ScriptEngine::GetManagedInstance(entityId);
 	}
 
 	static uint64_t Entity_FindEntityByName(MonoString* name)
@@ -301,8 +301,8 @@ namespace Nut {
 	static void RegisterComponent()
 	{
 		([]() {
-			std::string_view typeName = typeid(Component).name();
-			size_t pos = typeName.find_last_of(':');
+			const std::string_view typeName = typeid(Component).name();
+			const size_t pos = typeName.find_last_of(':');
 			std::string_view structName = typeName.substr(pos + 1);
 			std::string managedTypename = fmt::format("Nut.Scene.{}", structName);
 
