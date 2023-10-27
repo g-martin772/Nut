@@ -18,6 +18,10 @@ group "Dependencies"
     include "Nut/vendor/Box2D"
 group ""
 
+group "Projects"
+    include "Nero/SandboxProject/Sandbox"
+group ""
+
 include "Nut"
 include "Nut-ScriptCore"
 include "Nero"
